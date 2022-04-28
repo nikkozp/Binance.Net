@@ -56,7 +56,7 @@ namespace Binance.Net.Objects.Models.Spot
         /// The time the trade was made
         /// </summary>
         [JsonProperty("time"), JsonConverter(typeof(DateTimeConverter))]
-        public DateTime Timestamp { get; set; }
+        public DateTime TradeTime { get; set; }
         /// <summary>
         /// Whether account was the buyer in the trade
         /// </summary>
@@ -69,9 +69,6 @@ namespace Binance.Net.Objects.Models.Spot
         /// Whether trade was made with the best match
         /// </summary>
         public bool IsBestMatch { get; set; }
-        /// <summary>
-        /// If isolated margin (for margin account orders)
-        /// </summary>
-        public bool? IsIsolated { get; set; }
+        
     }
 }

@@ -68,7 +68,7 @@ namespace Binance.Net.Objects.Models.Futures.Socket
         /// The average price of the order
         /// </summary>
         [JsonProperty("ap")]
-        public decimal AveragePrice { get; set; }
+        public decimal AvgPrice { get; set; }
         /// <summary>
         /// The stop price of the order
         /// </summary>
@@ -148,7 +148,7 @@ namespace Binance.Net.Objects.Models.Futures.Socket
         /// Stop price working type
         /// </summary>
         [JsonProperty("wt"), JsonConverter(typeof(WorkingTypeConverter))]
-        public WorkingType StopPriceWorking { get; set; }
+        public WorkingType WorkingType { get; set; }
         /// <summary>
         /// Original Order Type
         /// </summary>
@@ -178,6 +178,6 @@ namespace Binance.Net.Objects.Models.Futures.Socket
         /// Realized profit of the trade
         /// </summary>
         [JsonProperty("rp")]
-        public decimal RealizedProfit { get; set; }
+        public decimal RealizedPnl { get; set; }
     }
 }

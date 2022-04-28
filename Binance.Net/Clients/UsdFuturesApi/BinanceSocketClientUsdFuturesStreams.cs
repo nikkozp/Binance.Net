@@ -127,9 +127,27 @@ namespace Binance.Net.Clients.UsdFuturesApi
         /// <inheritdoc />
         public async Task<CallResult<UpdateSubscription>> SubscribeToKlineUpdatesAsync(IEnumerable<string> symbols, IEnumerable<KlineInterval> intervals, Action<DataEvent<IBinanceStreamKlineData>> onMessage, CancellationToken ct = default)
         {
-            symbols.ValidateNotNull(nameof(symbols));
+            List<KeyValuePair<string, KlineInterval>> symbolIntervalPairs = new List<KeyValuePair<string, KlineInterval>>();
+
+            foreach (var interval in intervals)
+                foreach (var symbol in symbols)
+                    symbolIntervalPairs.Add(new KeyValuePair<string, KlineInterval>(symbol, interval));
+
+            return await SubscribeToKlineUpdatesAsync(symbolIntervalPairs, onMessage, ct).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<CallResult<UpdateSubscription>> SubscribeToKlineUpdatesAsync(IEnumerable<KeyValuePair<string, KlineInterval>> symbolIntervalPairs, Action<DataEvent<IBinanceStreamKlineData>> onMessage, CancellationToken ct = default)
+        {
+            symbolIntervalPairs.ValidateNotNull(nameof(symbolIntervalPairs));
+
+            symbolIntervalPairs = symbolIntervalPairs.Distinct();
+
             var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamKlineData>>>(data => onMessage(data.As<IBinanceStreamKlineData>(data.Data.Data, data.Data.Data.Symbol)));
-            symbols = symbols.SelectMany(a => intervals.Select(i => a.ToLower(CultureInfo.InvariantCulture) + klineStreamEndpoint + "_" + JsonConvert.SerializeObject(i, new KlineIntervalConverter(false)))).ToArray();
+            
+            var symbols = symbolIntervalPairs.Select(s => s.Key.ToLower(CultureInfo.InvariantCulture) + klineStreamEndpoint + "_" +
+                    JsonConvert.SerializeObject(s.Value, new KlineIntervalConverter(false))).ToArray();
+
             return await _baseClient.SubscribeInternal(this, BaseAddress, symbols, handler, ct).ConfigureAwait(false);
         }
 

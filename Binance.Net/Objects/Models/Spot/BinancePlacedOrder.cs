@@ -21,15 +21,5 @@ namespace Binance.Net.Objects.Models.Spot
         /// </summary>
         [JsonProperty("fills")]
         public IEnumerable<BinanceOrderTrade>? Trades { get; set; }
-
-        /// <summary>
-        /// Only present if a margin trade happened
-        /// </summary>
-        [JsonProperty("marginBuyBorrowAmount")]
-        public decimal? MarginBuyBorrowQuantity { get; set; }
-        /// <summary>
-        /// Only present if a margin trade happened
-        /// </summary>
-        public string? MarginBuyBorrowAsset { get; set; }
     }
 }

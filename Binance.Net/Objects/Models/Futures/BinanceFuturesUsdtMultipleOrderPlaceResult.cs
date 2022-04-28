@@ -5,7 +5,7 @@ namespace Binance.Net.Objects.Models.Futures
     /// <summary>
     /// Extension to be able to deserialize an error response as well
     /// </summary>
-    internal class BinanceFuturesMultipleOrderPlaceResult: BinanceFuturesPlacedOrder
+    internal class BinanceFuturesUsdtMultipleOrderPlaceResult: BinanceFuturesUsdtPlacedOrder
     {
         public int Code { get; set; }
         [JsonProperty("msg")]

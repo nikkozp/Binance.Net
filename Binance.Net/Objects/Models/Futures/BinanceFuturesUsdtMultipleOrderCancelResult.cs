@@ -5,7 +5,7 @@ namespace Binance.Net.Objects.Models.Futures
     /// <summary>
     /// Extension to be able to deserialize an error response as well
     /// </summary>
-    internal class BinanceFuturesMultipleOrderCancelResult : BinanceFuturesCancelOrder
+    internal class BinanceFuturesUsdtMultipleOrderCancelResult : BinanceFuturesUsdtCancelOrder
     {
         public int Code { get; set; }
 

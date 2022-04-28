@@ -18,16 +18,10 @@ namespace Binance.Net.Objects.Models.Futures
         public string Symbol { get; set; } = string.Empty;
 
         /// <summary>
-        /// Pair
-        /// </summary>
-        [JsonProperty("pair")]
-        public string? Pair { get; set; }
-
-        /// <summary>
         /// The order id as assigned by Binance
         /// </summary>
         [JsonProperty("orderId")]
-        public long Id { get; set; }
+        public long OrderId { get; set; }
         /// <summary>
         /// The order id as assigned by the client
         /// </summary>
@@ -48,18 +42,6 @@ namespace Binance.Net.Objects.Models.Futures
         /// </summary>
         [JsonProperty("cumQty")]
         public decimal QuantityFilled { get; set; }
-
-        /// <summary>
-        /// Cumulative quantity in quote asset ( for USD futures )
-        /// </summary>
-        [JsonProperty("cumQuote")]
-        public decimal? QuoteQuantityFilled { get; set; }
-
-        /// <summary>
-        /// Cumulative quantity in quote asset ( for Coin futures )
-        /// </summary>
-        [JsonProperty("cumBase")]
-        public decimal? BaseQuantityFilled { get; set; }
 
         /// <summary>
         /// The quantity of the order that is executed

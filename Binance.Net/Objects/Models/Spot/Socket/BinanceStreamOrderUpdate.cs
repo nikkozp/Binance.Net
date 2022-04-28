@@ -15,7 +15,7 @@ namespace Binance.Net.Objects.Models.Spot.Socket
         /// The id of the order as assigned by Binance
         /// </summary>
         [JsonProperty("i")]
-        public long Id { get; set; }
+        public long OrderId { get; set; }
         /// <summary>
         /// The symbol the order is for
         /// </summary>

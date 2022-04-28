@@ -282,7 +282,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
             return order.As(new OrderId
             {
                 SourceObject = order,
-                Id = order.Data.Id.ToString(CultureInfo.InvariantCulture)
+                Id = order.Data.OrderId.ToString(CultureInfo.InvariantCulture)
             });
         }
 
@@ -325,7 +325,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
             return order.As(new Order
             {
                 SourceObject = order,
-                Id = order.Data.Id.ToString(CultureInfo.InvariantCulture),
+                Id = order.Data.OrderId.ToString(CultureInfo.InvariantCulture),
                 Symbol = order.Data.Symbol,
                 Price = order.Data.Price,
                 Quantity = order.Data.Quantity,
@@ -360,7 +360,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
                     Quantity = t.Quantity,
                     Fee = t.Fee,
                     FeeAsset = t.FeeAsset,
-                    Timestamp = t.Timestamp
+                    Timestamp = t.TradeTime
                 }));
         }
 
@@ -374,7 +374,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
                 new Order
                 {
                     SourceObject = s,
-                    Id = s.Id.ToString(CultureInfo.InvariantCulture),
+                    Id = s.OrderId.ToString(CultureInfo.InvariantCulture),
                     Symbol = s.Symbol,
                     Side = s.Side == Enums.OrderSide.Buy ? CommonOrderSide.Buy : CommonOrderSide.Sell,
                     Price = s.Price,
@@ -399,7 +399,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
                 new Order
                 {
                     SourceObject = s,
-                    Id = s.Id.ToString(CultureInfo.InvariantCulture),
+                    Id = s.OrderId.ToString(CultureInfo.InvariantCulture),
                     Symbol = s.Symbol,
                     Price = s.Price,
                     Quantity = s.Quantity,
@@ -426,7 +426,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
             return order.As(new OrderId
             {
                 SourceObject = order,
-                Id = order.Data.Id.ToString(CultureInfo.InvariantCulture)
+                Id = order.Data.OrderId.ToString(CultureInfo.InvariantCulture)
             });
         }
 

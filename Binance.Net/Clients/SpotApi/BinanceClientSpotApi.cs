@@ -78,7 +78,7 @@ namespace Binance.Net.Clients.SpotApi
 
         #region helpers
 
-        internal async Task<WebCallResult<BinancePlacedOrder>> PlaceOrderInternal(Uri uri,
+        internal async Task<WebCallResult<T>> PlaceOrderInternal<T>(Uri uri,
             string symbol,
             Enums.OrderSide side,
             SpotOrderType type,
@@ -94,7 +94,7 @@ namespace Binance.Net.Clients.SpotApi
             OrderResponseType? orderResponseType = null,
             int? receiveWindow = null,
             int weight = 1,
-            CancellationToken ct = default)
+            CancellationToken ct = default) where T : BinancePlacedOrder
         {
             symbol.ValidateBinanceSymbol();
 
@@ -108,7 +108,7 @@ namespace Binance.Net.Clients.SpotApi
             if (!rulesCheck.Passed)
             {
                 _log.Write(LogLevel.Warning, rulesCheck.ErrorMessage!);
-                return new WebCallResult<BinancePlacedOrder>(new ArgumentError(rulesCheck.ErrorMessage!));
+                return new WebCallResult<T>(new ArgumentError(rulesCheck.ErrorMessage!));
             }
 
             quantity = rulesCheck.Quantity;
@@ -133,7 +133,7 @@ namespace Binance.Net.Clients.SpotApi
             parameters.AddOptionalParameter("newOrderRespType", orderResponseType == null ? null : JsonConvert.SerializeObject(orderResponseType, new OrderResponseTypeConverter(false)));
             parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
-            return await SendRequestInternal<BinancePlacedOrder>(uri, HttpMethod.Post, ct, parameters, true, weight: weight).ConfigureAwait(false);
+            return await SendRequestInternal<T>(uri, HttpMethod.Post, ct, parameters, true, weight: weight).ConfigureAwait(false);
         }
 
         internal Uri GetUrl(string endpoint, string api, string? version = null)
@@ -342,7 +342,7 @@ namespace Binance.Net.Clients.SpotApi
             return order.As(new OrderId
             {
                 SourceObject = order,
-                Id = order.Data.Id.ToString(CultureInfo.InvariantCulture)
+                Id = order.Data.OrderId.ToString(CultureInfo.InvariantCulture)
             });
         }
 
@@ -361,7 +361,7 @@ namespace Binance.Net.Clients.SpotApi
             return order.As(new Order
             {
                 SourceObject = order,
-                Id = order.Data.Id.ToString(CultureInfo.InvariantCulture),
+                Id = order.Data.OrderId.ToString(CultureInfo.InvariantCulture),
                 Symbol = order.Data.Symbol,
                 Price = order.Data.Price,
                 Quantity = order.Data.Quantity,
@@ -396,7 +396,7 @@ namespace Binance.Net.Clients.SpotApi
                     Quantity = t.Quantity,
                     Fee = t.Fee,
                     FeeAsset = t.FeeAsset,
-                    Timestamp = t.Timestamp
+                    Timestamp = t.TradeTime
                 }));
         }
 
@@ -410,7 +410,7 @@ namespace Binance.Net.Clients.SpotApi
                 new Order
                 {
                     SourceObject = s,
-                    Id = s.Id.ToString(CultureInfo.InvariantCulture),
+                    Id = s.OrderId.ToString(CultureInfo.InvariantCulture),
                     Symbol = s.Symbol,
                     Side = s.Side == Enums.OrderSide.Buy ? CommonOrderSide.Buy : CommonOrderSide.Sell,
                     Price = s.Price,
@@ -435,7 +435,7 @@ namespace Binance.Net.Clients.SpotApi
                 new Order
                 {
                     SourceObject = s,
-                    Id = s.Id.ToString(CultureInfo.InvariantCulture),
+                    Id = s.OrderId.ToString(CultureInfo.InvariantCulture),
                     Symbol = s.Symbol,
                     Price = s.Price,
                     Quantity = s.Quantity,
@@ -462,7 +462,7 @@ namespace Binance.Net.Clients.SpotApi
             return order.As(new OrderId
             {
                 SourceObject = order,
-                Id = order.Data.Id.ToString(CultureInfo.InvariantCulture)
+                Id = order.Data.OrderId.ToString(CultureInfo.InvariantCulture)
             });
         }
 

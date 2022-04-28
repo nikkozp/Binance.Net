@@ -1286,6 +1286,9 @@
         <member name="M:Binance.Net.Clients.SpotApi.BinanceSocketClientSpotStreams.SubscribeToKlineUpdatesAsync(System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{Binance.Net.Enums.KlineInterval},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Interfaces.IBinanceStreamKlineData}},System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
+        <member name="M:Binance.Net.Clients.SpotApi.BinanceSocketClientSpotStreams.SubscribeToKlineUpdatesAsync(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Binance.Net.Enums.KlineInterval}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Interfaces.IBinanceStreamKlineData}},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
         <member name="M:Binance.Net.Clients.SpotApi.BinanceSocketClientSpotStreams.SubscribeToMiniTickerUpdatesAsync(System.String,System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Interfaces.IBinanceMiniTick}},System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
@@ -1592,6 +1595,9 @@
             <inheritdoc />
         </member>
         <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceSocketClientUsdFuturesStreams.SubscribeToKlineUpdatesAsync(System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{Binance.Net.Enums.KlineInterval},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Interfaces.IBinanceStreamKlineData}},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceSocketClientUsdFuturesStreams.SubscribeToKlineUpdatesAsync(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Binance.Net.Enums.KlineInterval}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Interfaces.IBinanceStreamKlineData}},System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
         <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceSocketClientUsdFuturesStreams.SubscribeToContinuousContractKlineUpdatesAsync(System.String,Binance.Net.Enums.ContractType,Binance.Net.Enums.KlineInterval,System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Spot.Socket.BinanceStreamKlineData}},System.Threading.CancellationToken)">
@@ -7654,6 +7660,16 @@
             <param name="ct">Cancellation token for closing this subscription</param>
             <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
         </member>
+        <member name="M:Binance.Net.Interfaces.Clients.SpotApi.IBinanceSocketClientSpotStreams.SubscribeToKlineUpdatesAsync(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Binance.Net.Enums.KlineInterval}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Interfaces.IBinanceStreamKlineData}},System.Threading.CancellationToken)">
+            <summary>
+            Subscribes to the candlestick update stream for the provided symbols and intervals
+            <para><a href="https://binance-docs.github.io/apidocs/spot/en/#kline-candlestick-streams" /></para>
+            </summary>
+            <param name="symbolIntervalPairs">The symbol-interval pair of the candlesticks</param>
+            <param name="onMessage">The event handler for the received data</param>
+            <param name="ct">Cancellation token for closing this subscription</param>
+            <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
+        </member>
         <member name="M:Binance.Net.Interfaces.Clients.SpotApi.IBinanceSocketClientSpotStreams.SubscribeToMiniTickerUpdatesAsync(System.String,System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Interfaces.IBinanceMiniTick}},System.Threading.CancellationToken)">
             <summary>
             Subscribes to mini ticker updates stream for a specific symbol
@@ -8600,6 +8616,16 @@
             </summary>
             <param name="symbols">The symbols</param>
             <param name="intervals">The intervals of the candlesticks</param>
+            <param name="onMessage">The event handler for the received data</param>
+            <param name="ct">Cancellation token for closing this subscription</param>
+            <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
+        </member>
+        <member name="M:Binance.Net.Interfaces.Clients.UsdFuturesApi.IBinanceSocketClientUsdFuturesStreams.SubscribeToKlineUpdatesAsync(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Binance.Net.Enums.KlineInterval}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Interfaces.IBinanceStreamKlineData}},System.Threading.CancellationToken)">
+            <summary>
+            Subscribes to the candlestick update stream for the provided symbols and intervals
+            <para><a href="https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-streams" /></para>
+            </summary>
+            <param name="symbolIntervalPairs">The symbol-interval pair of the candlesticks</param>
             <param name="onMessage">The event handler for the received data</param>
             <param name="ct">Cancellation token for closing this subscription</param>
             <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
@@ -9754,7 +9780,7 @@
             The symbol the order is for
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.BinanceOrderBase.Id">
+        <member name="P:Binance.Net.Objects.Models.BinanceOrderBase.OrderId">
             <summary>
             The order id generated by Binance
             </summary>
@@ -9842,11 +9868,6 @@
         <member name="P:Binance.Net.Objects.Models.BinanceOrderBase.IsWorking">
             <summary>
             Is working
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.BinanceOrderBase.IsIsolated">
-            <summary>
-            If isolated margin (for margin account orders)
             </summary>
         </member>
         <member name="P:Binance.Net.Objects.Models.BinanceOrderBase.QuantityRemaining">
@@ -10436,7 +10457,7 @@
             Pair
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.Id">
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.OrderId">
             <summary>
             The order id as assigned by Binance
             </summary>
@@ -10454,16 +10475,6 @@
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.QuantityFilled">
             <summary>
             Cumulative quantity
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.QuoteQuantityFilled">
-            <summary>
-            Cumulative quantity in quote asset ( for USD futures )
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.BaseQuantityFilled">
-            <summary>
-            Cumulative quantity in quote asset ( for Coin futures )
             </summary>
         </member>
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.LastFilledQuantity">
@@ -10667,6 +10678,16 @@
             Data timestamp
             </summary>
         </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinCancelOrder">
+            <summary>
+            The result of cancel order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinCancelOrder.BaseQuantityFilled">
+            <summary>
+            Cumulative quantity in quote asset ( for Coin futures )
+            </summary>
+        </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinKline">
             <summary>
             Candlestick information for symbol
@@ -10683,6 +10704,16 @@
         </member>
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinKline.TakerBuyQuoteVolume">
             <inheritdoc/>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinMultipleOrderCancelResult">
+            <summary>
+            Extension to be able to deserialize an error response as well
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinMultipleOrderPlaceResult">
+            <summary>
+            Extension to be able to deserialize an error response as well
+            </summary>
         </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinOpenInterestHistory">
             <summary>
@@ -10712,6 +10743,26 @@
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinOpenInterestHistory.Timestamp">
             <summary>
             Timestamp
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinOrder">
+            <summary>
+            The result of query order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinOrder.BaseQuantity">
+            <summary>
+            Cumulative quantity in quote asset ( for Coin futures )
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinPlacedOrder">
+            <summary>
+            The result of placing a new order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCoinPlacedOrder.BaseQuantityFilled">
+            <summary>
+            Cumulative quantity in quote asset ( for Coin futures )
             </summary>
         </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesCompositeIndexInfo">
@@ -11060,16 +11111,6 @@
             Is multi assets mode enabled
             </summary>
         </member>
-        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesMultipleOrderCancelResult">
-            <summary>
-            Extension to be able to deserialize an error response as well
-            </summary>
-        </member>
-        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesMultipleOrderPlaceResult">
-            <summary>
-            Extension to be able to deserialize an error response as well
-            </summary>
-        </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesOpenInterest">
             <summary>
             Open interest
@@ -11145,7 +11186,7 @@
             Pair
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.Id">
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.OrderId">
             <summary>
             The order id as assigned by Binance
             </summary>
@@ -11168,16 +11209,6 @@
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.QuantityFilled">
             <summary>
             Cumulative quantity
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.QuoteQuantityFilled">
-            <summary>
-            Cumulative quantity in quote asset ( for USD futures )
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.BaseQuantityFilled">
-            <summary>
-            Cumulative quantity in quote asset ( for Coin futures )
             </summary>
         </member>
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.LastFilledQuantity">
@@ -11300,12 +11331,7 @@
             The symbol the order is for
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.Pair">
-            <summary>
-            Pair
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.Id">
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.OrderId">
             <summary>
             The order id as assigned by Binance
             </summary>
@@ -11328,16 +11354,6 @@
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.QuantityFilled">
             <summary>
             Cumulative quantity
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.QuoteQuantityFilled">
-            <summary>
-            Cumulative quantity in quote asset ( for USD futures )
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.BaseQuantityFilled">
-            <summary>
-            Cumulative quantity in quote asset ( for Coin futures )
             </summary>
         </member>
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.LastFilledQuantity">
@@ -11926,7 +11942,7 @@
             Position side
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesTrade.Timestamp">
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesTrade.TradeTime">
             <summary>
             Timestamp
             </summary>
@@ -12026,6 +12042,16 @@
             Auto-exchange threshold in Multi-Assets margin mode
             </summary>
         </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtCancelOrder">
+            <summary>
+            The result of cancel order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtCancelOrder.QuoteQuantityFilled">
+            <summary>
+            Cumulative quantity in quote asset ( for USD futures )
+            </summary>
+        </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtKline">
             <summary>
             Candlestick information for symbol
@@ -12042,6 +12068,36 @@
         </member>
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtKline.TakerBuyQuoteVolume">
             <inheritdoc/>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtMultipleOrderCancelResult">
+            <summary>
+            Extension to be able to deserialize an error response as well
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtMultipleOrderPlaceResult">
+            <summary>
+            Extension to be able to deserialize an error response as well
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtOrder">
+            <summary>
+            The result of query order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtOrder.QuoteQuantity">
+            <summary>
+            Cumulative quantity in quote asset ( for USD futures )
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtPlacedOrder">
+            <summary>
+            The result of placing a new order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtPlacedOrder.QuoteQuantityFilled">
+            <summary>
+            Cumulative quantity in quote asset ( for USD futures )
+            </summary>
         </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinancePositionBase">
             <summary>
@@ -12496,7 +12552,7 @@
             Position mode update data
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamConfigUpdateData.PositionMode">
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamConfigUpdateData.MultiAssetMode">
             <summary>
             Multi-Assets Mode
             </summary>
@@ -12896,7 +12952,7 @@
             The price of the order
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamOrderUpdateData.AveragePrice">
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamOrderUpdateData.AvgPrice">
             <summary>
             The average price of the order
             </summary>
@@ -12976,7 +13032,7 @@
             Is this reduce only
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamOrderUpdateData.StopPriceWorking">
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamOrderUpdateData.WorkingType">
             <summary>
             Stop price working type
             </summary>
@@ -13006,7 +13062,7 @@
             Callback Rate, only pushed with TRAILING_STOP_MARKET order
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamOrderUpdateData.RealizedProfit">
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamOrderUpdateData.RealizedPnl">
             <summary>
             Realized profit of the trade
             </summary>
@@ -13385,6 +13441,11 @@
         <member name="P:Binance.Net.Objects.Models.Spot.BinanceC2CUserTrade.AdvertisementRole">
             <summary>
             Advertisement role
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Spot.BinanceCanceledOrder">
+            <summary>
+            Information regarding a specific order
             </summary>
         </member>
         <member name="T:Binance.Net.Objects.Models.Spot.BinanceConvertTrade">
@@ -14363,16 +14424,6 @@
             Trades for the order
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Spot.BinancePlacedOrder.MarginBuyBorrowQuantity">
-            <summary>
-            Only present if a margin trade happened
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Spot.BinancePlacedOrder.MarginBuyBorrowAsset">
-            <summary>
-            Only present if a margin trade happened
-            </summary>
-        </member>
         <member name="T:Binance.Net.Objects.Models.Spot.BinancePrice">
             <summary>
             The price of a symbol
@@ -15091,7 +15142,7 @@
             The asset the fee is paid in
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Spot.BinanceTrade.Timestamp">
+        <member name="P:Binance.Net.Objects.Models.Spot.BinanceTrade.TradeTime">
             <summary>
             The time the trade was made
             </summary>
@@ -15109,11 +15160,6 @@
         <member name="P:Binance.Net.Objects.Models.Spot.BinanceTrade.IsBestMatch">
             <summary>
             Whether trade was made with the best match
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Spot.BinanceTrade.IsIsolated">
-            <summary>
-            If isolated margin (for margin account orders)
             </summary>
         </member>
         <member name="T:Binance.Net.Objects.Models.Spot.BinanceTradeFee">
@@ -18718,6 +18764,26 @@
             Minimal quantity which can be repaid
             </summary>
         </member>
+        <member name="T:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginCanceledOrder">
+            <summary>
+            Information regarding a specific order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginCanceledOrder.IsIsolated">
+            <summary>
+            If isolated margin (for margin account orders)
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginOrder">
+            <summary>
+            Order info
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginOrder.IsIsolated">
+            <summary>
+            If isolated margin (for margin account orders)
+            </summary>
+        </member>
         <member name="T:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginOrderOcoList">
             <summary>
             Oco info
@@ -18778,6 +18844,21 @@
             Symbol name
             </summary>
         </member>
+        <member name="T:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginPlacedOrder">
+            <summary>
+            The result of placing a new order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginPlacedOrder.MarginBuyBorrowQuantity">
+            <summary>
+            Only present if a margin trade happened
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginPlacedOrder.MarginBuyBorrowAsset">
+            <summary>
+            Only present if a margin trade happened
+            </summary>
+        </member>
         <member name="T:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginPriceIndex">
             <summary>
             Price index for a symbol
@@ -18796,6 +18877,16 @@
         <member name="P:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginPriceIndex.CalculationTime">
             <summary>
             Time of calculation
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginTrade">
+            <summary>
+            Information about a trade
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginTrade.IsIsolated">
+            <summary>
+            If isolated margin (for margin account orders)
             </summary>
         </member>
         <member name="T:Binance.Net.Objects.Models.Spot.Margin.BinanceTransaction">
@@ -19733,7 +19824,7 @@
             Update data about an order
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Spot.Socket.BinanceStreamOrderUpdate.Id">
+        <member name="P:Binance.Net.Objects.Models.Spot.Socket.BinanceStreamOrderUpdate.OrderId">
             <summary>
             The id of the order as assigned by Binance
             </summary>
