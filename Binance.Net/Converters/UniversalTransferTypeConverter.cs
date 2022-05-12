@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Binance.Net.Converters
 {
-    internal class UniversalTransferTypeConverter : BaseConverter<UniversalTransferType>
+    public class UniversalTransferTypeConverter : BaseConverter<UniversalTransferType>
     {
         public UniversalTransferTypeConverter() : this(true) { }
         public UniversalTransferTypeConverter(bool quotes) : base(quotes) { }
