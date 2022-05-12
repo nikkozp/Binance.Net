@@ -2376,7 +2376,7 @@
         </member>
         <member name="T:Binance.Net.Enums.KlineInterval">
             <summary>
-            The interval for the kline
+            The interval for the kline, the int value represents the time in seconds
             </summary>
         </member>
         <member name="F:Binance.Net.Enums.KlineInterval.OneMinute">
@@ -5418,7 +5418,7 @@
             <param name="asset">Asset</param>
             <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
             <param name="ct">Cancellation token</param>
-            <returns>Flexible product position</returns>
+            <returns>Flexible product position(s)</returns>
         </member>
         <member name="M:Binance.Net.Interfaces.Clients.GeneralApi.IBinanceClientGeneralApiLending.GetFixedAndCustomizedFixedProjectListAsync(Binance.Net.Enums.ProjectType,System.String,System.Nullable{Binance.Net.Enums.ProductStatus},System.Nullable{System.Boolean},System.String,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int64},System.Threading.CancellationToken)">
             <summary>
@@ -9600,6 +9600,11 @@
         <member name="P:Binance.Net.Objects.BinanceOrderBookOptions.UpdateInterval">
             <summary>
             Update interval in milliseconds, either 100 or 1000. Defaults to 1000
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.BinanceOrderBookOptions.InitialDataTimeout">
+            <summary>
+            After how much time we should consider the connection dropped if no data is received for this time after the initial subscriptions
             </summary>
         </member>
         <member name="P:Binance.Net.Objects.BinanceOrderBookOptions.RestClient">
@@ -18022,6 +18027,11 @@
         <member name="P:Binance.Net.Objects.Models.Spot.Lending.BinanceFlexibleProductPosition.AverageAnnualInterestRate">
             <summary>
             Average annual interest rate
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Spot.Lending.BinanceFlexibleProductPosition.TierAnnualInterestRate">
+            <summary>
+            Tier Average annual interest rate
             </summary>
         </member>
         <member name="P:Binance.Net.Objects.Models.Spot.Lending.BinanceFlexibleProductPosition.CanRedeem">
