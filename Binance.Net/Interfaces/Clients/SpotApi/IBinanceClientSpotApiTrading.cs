@@ -8,6 +8,7 @@ using Binance.Net.Objects.Models.Spot;
 using Binance.Net.Objects.Models.Spot.Blvt;
 using Binance.Net.Objects.Models.Spot.BSwap;
 using Binance.Net.Objects.Models.Spot.Margin;
+using Binance.Net.Objects.Models.Spot.Staking;
 using CryptoExchange.Net.Objects;
 
 namespace Binance.Net.Interfaces.Clients.SpotApi
@@ -32,6 +33,7 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         /// <param name="stopPrice">Used for stop orders</param>
         /// <param name="icebergQty">User for iceberg orders</param>
         /// <param name="orderResponseType">Used for the response JSON</param>
+        /// <param name="trailingDelta">Trailing delta value for order in BIPS. A value of 1 means 0.01% trailing delta.</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Id's for the placed test order</returns>
@@ -46,6 +48,7 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
             decimal? stopPrice = null,
             decimal? icebergQty = null,
             OrderResponseType? orderResponseType = null,
+            int? trailingDelta = null,
             int? receiveWindow = null,
             CancellationToken ct = default);
 
@@ -64,6 +67,7 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         /// <param name="stopPrice">Used for stop orders</param>
         /// <param name="icebergQty">Used for iceberg orders</param>
         /// <param name="orderResponseType">Used for the response JSON</param>
+        /// <param name="trailingDelta">Trailing delta value for order in BIPS. A value of 1 means 0.01% trailing delta.</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Id's for the placed order</returns>
@@ -78,6 +82,7 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
             decimal? stopPrice = null,
             decimal? icebergQty = null,
             OrderResponseType? orderResponseType = null,
+            int? trailingDelta = null,
             int? receiveWindow = null,
             CancellationToken ct = default);
 
@@ -156,6 +161,7 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         /// <param name="listClientOrderId">Client id for the order list</param>
         /// <param name="limitIcebergQuantity">Iceberg quantity for the limit order</param>
         /// <param name="stopIcebergQuantity">Iceberg quantity for the stop order</param>
+        /// <param name="trailingDelta">Trailing delta value for order in BIPS. A value of 1 means 0.01% trailing delta.</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Order list info</returns>
@@ -171,6 +177,7 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
             decimal? limitIcebergQuantity = null,
             decimal? stopIcebergQuantity = null,
             TimeInForce? stopLimitTimeInForce = null,
+            int? trailingDelta = null,
             int? receiveWindow = null,
             CancellationToken ct = default);
 
@@ -466,7 +473,7 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
-        Task<WebCallResult<IEnumerable<BinanecBlvtSubscription>>> GetLeveragedTokensSubscriptionRecordsAsync(string? tokenName = null, long? id = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, int? receiveWindow = null, CancellationToken ct = default);
+        Task<WebCallResult<IEnumerable<BinanceBlvtSubscription>>> GetLeveragedTokensSubscriptionRecordsAsync(string? tokenName = null, long? id = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, int? receiveWindow = null, CancellationToken ct = default);
 
         /// <summary>
         /// Redeem a token
@@ -649,5 +656,62 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         Task<WebCallResult<BinanceListResult<BinanceConvertTrade>>> GetConvertTradeHistoryAsync(DateTime startTime, DateTime endTime, int? limit = null, long? receiveWindow = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Purchase a staking product
+        /// <para><a href="https://binance-docs.github.io/apidocs/spot/en/#purchase-staking-product-user_data" /></para>
+        /// </summary>
+        /// <param name="product">Product type</param>
+        /// <param name="productId">Product id</param>
+        /// <param name="quantity">Quantity to purchase</param>
+        /// <param name="renewable">Renewable</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        Task<WebCallResult<BinanceStakingPositionResult>> PurchaseStakingProductAsync(StakingProductType product, string productId, decimal quantity, bool? renewable = null, long? receiveWindow = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Redeem a staking product
+        /// <para><a href="https://binance-docs.github.io/apidocs/spot/en/#redeem-staking-product-user_data" /></para>
+        /// </summary>
+        /// <param name="product">Product type</param>
+        /// <param name="productId">Product id</param>
+        /// <param name="quantity">Quantity to purchase</param>
+        /// <param name="renewable">Renewable</param>
+        /// <param name="positionId">Position id, required for Staking or LockedDefi types</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        Task<WebCallResult<BinanceStakingResult>> RedeemStakingProductAsync(StakingProductType product, string productId, string? positionId = null, decimal? quantity = null, bool? renewable = null, long? receiveWindow = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Get staking positions
+        /// <para><a href="https://binance-docs.github.io/apidocs/spot/en/#get-staking-product-position-user_data" /></para>
+        /// </summary>
+        /// <param name="product">Product type</param>
+        /// <param name="productId">Product id</param>
+        /// <param name="page">Page</param>
+        /// <param name="limit">Max results</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        Task<WebCallResult<IEnumerable<BinanceStakingPosition>>> GetStakingPositionsAsync(StakingProductType product, string? productId = null, int? page = null, int? limit = null, long? receiveWindow = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Get staking history
+        /// <para><a href="https://binance-docs.github.io/apidocs/spot/en/#get-staking-history-user_data" /></para>
+        /// </summary>
+        /// <param name="product">Product type</param>
+        /// <param name="transactionType">Transaction type</param>
+        /// <param name="asset">Filter by asset</param>
+        /// <param name="startTime">Filter by start time</param>
+        /// <param name="endTime">Filter by end time</param>
+        /// <param name="page">Page</param>
+        /// <param name="limit">Max results</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        Task<WebCallResult<IEnumerable<BinanceStakingHistory>>> GetStakingHistoryAsync(StakingProductType product, StakingTransactionType transactionType, string? asset = null, DateTime? startTime = null, DateTime? endTime = null, int? page = null, int? limit = null, long? receiveWindow = null, CancellationToken ct = default);
+
     }
 }

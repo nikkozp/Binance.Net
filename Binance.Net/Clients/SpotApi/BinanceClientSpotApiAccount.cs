@@ -11,8 +11,10 @@ using Binance.Net.Interfaces.Clients.SpotApi;
 using Binance.Net.Objects.Internal;
 using Binance.Net.Objects.Models;
 using Binance.Net.Objects.Models.Spot;
+using Binance.Net.Objects.Models.Spot.Blvt;
 using Binance.Net.Objects.Models.Spot.IsolatedMargin;
 using Binance.Net.Objects.Models.Spot.Margin;
+using Binance.Net.Objects.Models.Spot.Staking;
 using CryptoExchange.Net;
 using CryptoExchange.Net.Converters;
 using CryptoExchange.Net.Objects;
@@ -59,12 +61,15 @@ namespace Binance.Net.Clients.SpotApi
         private const string transferHistoryEndpoint = "margin/transfer";
         private const string interestHistoryEndpoint = "margin/interestHistory";
         private const string interestRateHistoryEndpoint = "margin/interestRateHistory";
+        private const string interestMarginDataEndpoint = "margin/crossMarginData";
         private const string forceLiquidationHistoryEndpoint = "margin/forceLiquidationRec";
 
         private const string isolatedMarginTransferHistoryEndpoint = "margin/isolated/transfer";
         private const string isolatedMarginAccountEndpoint = "margin/isolated/account";
         private const string isolatedMarginAccountLimitEndpoint = "margin/isolated/accountLimit";
         private const string transferIsolatedMarginAccountEndpoint = "margin/isolated/transfer";
+
+        private const string marginOrderRateLimitEndpoint = "margin/rateLimit/order";
 
         private const string getListenKeyEndpoint = "userDataStream";
         private const string keepListenKeyAliveEndpoint = "userDataStream";
@@ -74,8 +79,17 @@ namespace Binance.Net.Clients.SpotApi
         private const string keepListenKeyAliveIsolatedEndpoint = "userDataStream/isolated";
         private const string closeListenKeyIsolatedEndpoint = "userDataStream/isolated";
 
+
+        // Blvt
+        private const string blvtUserLimitEndpoint = "blvt/userLimit";
+
         // Rebate
         private const string rebateHistoryEndpoint = "rebate/taxQuery";
+
+        // Staking
+        private const string setAutoStakingEndpoint = "staking/setAutoStaking";
+        private const string stakingQuotaLeftEndpoint = "staking/personalLeftQuota";
+
 
         private const string marginApi = "sapi";
         private const string marginVersion = "1";
@@ -663,6 +677,24 @@ namespace Binance.Net.Clients.SpotApi
 
         #endregion
 
+        #region Get Cross Margin Interest Data
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<IEnumerable<BinanceInterestMarginData>>> GetInterestMarginDataAsync(string? asset = null, string? vipLevel = null, long? receiveWindow = null, CancellationToken ct = default)
+        {
+            asset?.ValidateNotNull(nameof(asset));
+
+            var parameters = new Dictionary<string, object>();
+
+            parameters.AddOptionalParameter("coin", asset);
+            parameters.AddOptionalParameter("vipLevel", vipLevel?.ToString(CultureInfo.InvariantCulture));
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+
+            return await _baseClient.SendRequestInternal<IEnumerable<BinanceInterestMarginData>>(_baseClient.GetUrl(interestMarginDataEndpoint, marginApi, marginVersion), HttpMethod.Get, ct, parameters, true).ConfigureAwait(false);
+        }
+
+        #endregion
+
         #region Get Interest History
 
         /// <inheritdoc />
@@ -916,6 +948,18 @@ namespace Binance.Net.Clients.SpotApi
                     parameters, true).ConfigureAwait(false);
         }
 
+
+        #region Margin order rate limit
+        /// <inheritdoc />
+        public async Task<WebCallResult<IEnumerable<BinanceOrderRateLimit>>> GetMarginOrderRateLimitStatusAsync(int? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+
+            return await _baseClient.SendRequestInternal<IEnumerable<BinanceOrderRateLimit>>(_baseClient.GetUrl(marginOrderRateLimitEndpoint, "sapi", "1"), HttpMethod.Get, ct, parameters, true, weight: 20).ConfigureAwait(false);
+        }
+        #endregion
+
         #region Create a ListenKey
 
         /// <inheritdoc />
@@ -1058,6 +1102,47 @@ namespace Binance.Net.Clients.SpotApi
             return result.As(result.Data.Data);
         }
 
+        #endregion
+
+        #region Blvt
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<IEnumerable<BinanceBlvtUserLimit>>> GetLeveragedTokensUserLimitAsync(string? tokenName = null, long? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("tokenName", tokenName);
+
+            return await _baseClient.SendRequestInternal<IEnumerable<BinanceBlvtUserLimit>>(_baseClient.GetUrl(blvtUserLimitEndpoint, marginApi, marginVersion), HttpMethod.Get, ct, parameters, true).ConfigureAwait(false);           
+        }
+
+        #endregion
+
+        #region Staking
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<BinanceStakingResult>> SetAutoStakingAsync(StakingProductType product, string positionId, bool renewable, long? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>()
+            {
+                { "product", EnumConverter.GetString(product) },
+                { "positionId", positionId },
+                { "renewable", renewable },
+            };
+
+            return await _baseClient.SendRequestInternal<BinanceStakingResult>(_baseClient.GetUrl(setAutoStakingEndpoint, marginApi, marginVersion), HttpMethod.Post, ct, parameters, true).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<BinanceStakingPersonalQuota>> GetStakingPersonalQuotaAsync(StakingProductType product, string productId, long? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>()
+            {
+                { "product", EnumConverter.GetString(product) },
+                { "productId", productId }
+            };
+
+            return await _baseClient.SendRequestInternal<BinanceStakingPersonalQuota>(_baseClient.GetUrl(stakingQuotaLeftEndpoint, marginApi, marginVersion), HttpMethod.Get, ct, parameters, true).ConfigureAwait(false);
+        }
         #endregion
     }
 }

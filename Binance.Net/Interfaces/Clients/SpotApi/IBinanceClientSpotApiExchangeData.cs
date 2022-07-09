@@ -8,6 +8,7 @@ using Binance.Net.Objects.Models.Spot.Blvt;
 using Binance.Net.Objects.Models.Spot.BSwap;
 using Binance.Net.Objects.Models.Spot.IsolatedMargin;
 using Binance.Net.Objects.Models.Spot.Margin;
+using Binance.Net.Objects.Models.Spot.Staking;
 using CryptoExchange.Net.Objects;
 
 namespace Binance.Net.Interfaces.Clients.SpotApi
@@ -172,6 +173,16 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
             CancellationToken ct = default);
 
         /// <summary>
+        /// Get data regarding the last 24 hours for the provided symbols
+        /// <para><a href="https://binance-docs.github.io/apidocs/spot/en/#24hr-ticker-price-change-statistics" /></para>
+        /// </summary>
+        /// <param name="symbols">The symbols to get the data for</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>Data over the last 24 hours</returns>
+        Task<WebCallResult<IEnumerable<IBinanceTick>>> GetTickersAsync(IEnumerable<string> symbols,
+            CancellationToken ct = default);
+
+        /// <summary>
         /// Get data regarding the last 24 hours for all symbols
         /// <para><a href="https://binance-docs.github.io/apidocs/spot/en/#24hr-ticker-price-change-statistics" /></para>
         /// </summary>
@@ -188,12 +199,20 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         Task<WebCallResult<BinanceBookPrice>> GetBookPriceAsync(string symbol, CancellationToken ct = default);
 
         /// <summary>
+        /// Gets the best price/quantity on the order book for a symbol.
+        /// </summary>
+        /// <param name="symbol">Symbol to get book price for</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>List of book prices</returns>
+        Task<WebCallResult<IEnumerable<BinanceBookPrice>>> GetBookPricesAsync(IEnumerable<string> symbol, CancellationToken ct = default);
+
+        /// <summary>
         /// Gets the best price/quantity on the order book for all symbols.
         /// <para><a href="https://binance-docs.github.io/apidocs/spot/en/#symbol-order-book-ticker" /></para>
         /// </summary>
         /// <param name="ct">Cancellation token</param>
         /// <returns>List of book prices</returns>
-        Task<WebCallResult<IEnumerable<BinanceBookPrice>>> GetAllBookPricesAsync(CancellationToken ct = default);
+        Task<WebCallResult<IEnumerable<BinanceBookPrice>>> GetBookPricesAsync(CancellationToken ct = default);
 
         /// <summary>
         /// Gets the price of a symbol
@@ -203,6 +222,15 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         /// <param name="ct">Cancellation token</param>
         /// <returns>Price of symbol</returns>
         Task<WebCallResult<BinancePrice>> GetPriceAsync(string symbol, CancellationToken ct = default);
+
+        /// <summary>
+        ///  Gets the prices of symbols
+        /// <para><a href="https://binance-docs.github.io/apidocs/spot/en/#symbol-price-ticker" /></para>
+        /// </summary>
+        /// <param name="symbols">The symbols to get the price for</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>List of prices</returns>
+        Task<WebCallResult<IEnumerable<BinancePrice>>> GetPricesAsync(IEnumerable<string> symbols, CancellationToken ct = default);
 
         /// <summary>
         /// Get a list of the prices of all symbols
@@ -317,5 +345,17 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         /// <returns></returns>
         Task<WebCallResult<IEnumerable<BinanceBSwapPoolConfig>>> GetLiquidityPoolConfigurationAsync(int poolId, int? receiveWindow = null, CancellationToken ct = default);
 
+        /// <summary>
+        /// Get avaialble staking products list
+        /// <para><a href="https://binance-docs.github.io/apidocs/spot/en/#get-staking-product-list-user_data" /></para>
+        /// </summary>
+        /// <param name="product">Product type</param>
+        /// <param name="asset">Filter for asset</param>
+        /// <param name="page">Page</param>
+        /// <param name="limit">Max items per page</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        Task<WebCallResult<IEnumerable<BinanceStakingProduct>>> GetStakingProductsAsync(StakingProductType product, string? asset = null, int? page = null, int? limit = null, int? receiveWindow = null, CancellationToken ct = default);
     }
 }
