@@ -1776,6 +1776,11 @@
             Trade group 3
             </summary>
         </member>
+        <member name="F:Binance.Net.Enums.AccountType.TradeGroup004">
+            <summary>
+            Trade group 4
+            </summary>
+        </member>
         <member name="T:Binance.Net.Enums.AccountUpdateReason">
             <summary>
             Account update reason
@@ -6557,7 +6562,7 @@
         </member>
         <member name="M:Binance.Net.Interfaces.Clients.SpotApi.IBinanceClientSpotApiAccount.CrossMarginTransferAsync(System.String,System.Decimal,Binance.Net.Enums.TransferDirectionType,System.Nullable{System.Int32},System.Threading.CancellationToken)">
             <summary>
-            Execute transfer between spot account and margin account.
+            Execute transfer between spot account and cross margin account.
             <para><a href="https://binance-docs.github.io/apidocs/spot/en/#margin-account-trade" /></para>
             </summary>
             <param name="asset">The asset being transferred, e.g., BTC</param>
@@ -12984,6 +12989,11 @@
         <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamBalance.CrossWalletBalance">
             <summary>
             The quantity that is locked in a trade
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamBalance.BalanceChange">
+            <summary>
+            The balance change except PnL and commission
             </summary>
         </member>
         <member name="T:Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamPosition">
