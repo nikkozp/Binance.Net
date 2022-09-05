@@ -14,6 +14,7 @@ using Binance.Net.Objects.Models.Spot;
 using Binance.Net.Objects.Models.Spot.Blvt;
 using Binance.Net.Objects.Models.Spot.IsolatedMargin;
 using Binance.Net.Objects.Models.Spot.Margin;
+using Binance.Net.Objects.Models.Spot.PortfolioMargin;
 using Binance.Net.Objects.Models.Spot.Staking;
 using CryptoExchange.Net;
 using CryptoExchange.Net.Converters;
@@ -41,6 +42,7 @@ namespace Binance.Net.Clients.SpotApi
         private const string disableFastWithdrawSwitchEndpoint = "account/disableFastWithdrawSwitch";
         private const string enableFastWithdrawSwitchEndpoint = "account/enableFastWithdrawSwitch";
         private const string dustLogEndpoint = "asset/dribblet";
+        private const string balancesEndpoint = "asset/getUserAsset";
         private const string dustTransferEndpoint = "asset/dust";
         private const string dustElligableEndpoint = "asset/dust-btc";
         private const string toggleBnbBurnEndpoint = "bnbBurn";
@@ -55,6 +57,7 @@ namespace Binance.Net.Clients.SpotApi
         private const string marginRepayEndpoint = "margin/repay";
         private const string getLoanEndpoint = "margin/loan";
         private const string getRepayEndpoint = "margin/repay";
+        private const string marginDustLogEndpoint = "margin/dribblet";
         private const string marginAccountInfoEndpoint = "margin/account";
         private const string maxBorrowableEndpoint = "margin/maxBorrowable";
         private const string maxTransferableEndpoint = "margin/maxTransferable";
@@ -63,6 +66,7 @@ namespace Binance.Net.Clients.SpotApi
         private const string interestRateHistoryEndpoint = "margin/interestRateHistory";
         private const string interestMarginDataEndpoint = "margin/crossMarginData";
         private const string forceLiquidationHistoryEndpoint = "margin/forceLiquidationRec";
+        private const string isolatedMargingTierEndpoint = "margin/isolatedMarginTier";
 
         private const string isolatedMarginTransferHistoryEndpoint = "margin/isolated/transfer";
         private const string isolatedMarginAccountEndpoint = "margin/isolated/account";
@@ -89,6 +93,12 @@ namespace Binance.Net.Clients.SpotApi
         // Staking
         private const string setAutoStakingEndpoint = "staking/setAutoStaking";
         private const string stakingQuotaLeftEndpoint = "staking/personalLeftQuota";
+
+        // Portfolio Margin
+        private const string portfolioMarginAccountEndpoint = "portfolio/account";
+        private const string portfolioMarginCollateralRateEndpoint = "portfolio/collateralRate";
+        private const string portfolioMarginLoanEndpoint = "portfolio/pmLoan";
+        private const string portfolioMarginRepayEndpoint = "portfolio/repay";
 
 
         private const string marginApi = "sapi";
@@ -330,6 +340,18 @@ namespace Binance.Net.Clients.SpotApi
 
 
             return await _baseClient.SendRequestInternal<IEnumerable<BinanceUserAsset>>(_baseClient.GetUrl(userCoinsEndpoint, "sapi", "1"), HttpMethod.Get, ct, parameters, true, weight: 10).ConfigureAwait(false);
+        }
+        #endregion
+
+        #region Balances
+        /// <inheritdoc />
+        public async Task<WebCallResult<IEnumerable<BinanceUserBalance>>> GetBalancesAsync(string? asset = null, bool? needBtcValuation = null, int? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+            parameters.AddOptionalParameter("asset", asset);
+            parameters.AddOptionalParameter("needBtcValuation", needBtcValuation);
+            return await _baseClient.SendRequestInternal<IEnumerable<BinanceUserBalance>>(_baseClient.GetUrl(balancesEndpoint, "sapi", "3"), HttpMethod.Post, ct, parameters, true, weight: 5).ConfigureAwait(false);
         }
         #endregion
 
@@ -587,6 +609,20 @@ namespace Binance.Net.Clients.SpotApi
 
         #endregion
 
+        #region Margin DustLog
+        /// <inheritdoc />
+        public async Task<WebCallResult<BinanceDustLogList>> GetMarginDustLogAsync(DateTime? startTime = null, DateTime? endTime = null, int? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+            parameters.AddOptionalParameter("startTime", DateTimeConverter.ConvertToMilliseconds(startTime));
+            parameters.AddOptionalParameter("endTime", DateTimeConverter.ConvertToMilliseconds(endTime));
+            var result = await _baseClient.SendRequestInternal<BinanceDustLogList>(_baseClient.GetUrl(marginDustLogEndpoint, "sapi", "1"), HttpMethod.Get, ct, parameters, true).ConfigureAwait(false);
+            return result;
+        }
+
+        #endregion
+
         #region Get Transfer History
 
         /// <inheritdoc />
@@ -758,6 +794,22 @@ namespace Binance.Net.Clients.SpotApi
 
         #endregion
 
+        #region Get Isolated margin tier data
+        /// <inheritdoc />
+        public async Task<WebCallResult<IEnumerable<BinanceIsolatedMarginTierData>>> GetIsolatedMarginTierDataAsync(string symbol, int? tier = null, long? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>()
+            {
+                { "symbol", symbol }
+            };
+            parameters.AddOptionalParameter("tier", tier);
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+
+            return await _baseClient.SendRequestInternal<IEnumerable<BinanceIsolatedMarginTierData>>(_baseClient.GetUrl(isolatedMargingTierEndpoint, marginApi, marginVersion), HttpMethod.Get, ct, parameters, true).ConfigureAwait(false);
+        }
+
+        #endregion
+
         #region Query Margin Account Details
 
         /// <inheritdoc />
@@ -815,6 +867,7 @@ namespace Binance.Net.Clients.SpotApi
 
         #endregion
 
+        #region Query isolated margin transfer history
         /// <inheritdoc />
         public async Task<WebCallResult<BinanceQueryRecords<BinanceIsolatedMarginTransfer>>>
             GetIsolatedMarginAccountTransferHistoryAsync(string symbol, string? asset = null,
@@ -851,6 +904,9 @@ namespace Binance.Net.Clients.SpotApi
                     _baseClient.GetUrl(isolatedMarginTransferHistoryEndpoint, "sapi", "1"), HttpMethod.Get, ct,
                     parameters, true, weight: 600).ConfigureAwait(false);
         }
+        #endregion
+
+        #region Query isolated margin account
 
         /// <inheritdoc />
         public async Task<WebCallResult<BinanceIsolatedMarginAccount>> GetIsolatedMarginAccountAsync(
@@ -867,6 +923,10 @@ namespace Binance.Net.Clients.SpotApi
                     _baseClient.GetUrl(isolatedMarginAccountEndpoint, "sapi", "1"), HttpMethod.Get, ct,
                     parameters, true, weight: 10).ConfigureAwait(false);
         }
+
+        #endregion
+
+        #region Disable isolated margin account
 
         /// <inheritdoc />
         public async Task<WebCallResult<CreateIsolatedMarginAccountResult>> DisableIsolatedMarginAccountAsync(string symbol,
@@ -887,6 +947,10 @@ namespace Binance.Net.Clients.SpotApi
                     parameters, true, weight: 300).ConfigureAwait(false);
         }
 
+        #endregion
+
+        #region Enable isolated margin account
+
         /// <inheritdoc />
         public async Task<WebCallResult<CreateIsolatedMarginAccountResult>> EnableIsolatedMarginAccountAsync(string symbol,
             int? receiveWindow = null, CancellationToken ct = default)
@@ -906,6 +970,10 @@ namespace Binance.Net.Clients.SpotApi
                     parameters, true, weight: 300).ConfigureAwait(false);
         }
 
+        #endregion
+
+        #region Get enabled isolated margin account
+
         /// <inheritdoc />
         public async Task<WebCallResult<IsolatedMarginAccountLimit>> GetEnabledIsolatedMarginAccountLimitAsync(
             int? receiveWindow = null, CancellationToken ct = default)
@@ -921,6 +989,9 @@ namespace Binance.Net.Clients.SpotApi
                     _baseClient.GetUrl(isolatedMarginAccountLimitEndpoint, "sapi", "1"), HttpMethod.Get, ct,
                     parameters, true).ConfigureAwait(false);
         }
+        #endregion
+
+        #region Isolated margin account transfer
 
         /// <inheritdoc />
         public async Task<WebCallResult<BinanceTransaction>> IsolatedMarginAccountTransferAsync(string asset,
@@ -948,6 +1019,7 @@ namespace Binance.Net.Clients.SpotApi
                     parameters, true).ConfigureAwait(false);
         }
 
+        #endregion
 
         #region Margin order rate limit
         /// <inheritdoc />
@@ -1111,6 +1183,7 @@ namespace Binance.Net.Clients.SpotApi
         {
             var parameters = new Dictionary<string, object>();
             parameters.AddOptionalParameter("tokenName", tokenName);
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
             return await _baseClient.SendRequestInternal<IEnumerable<BinanceBlvtUserLimit>>(_baseClient.GetUrl(blvtUserLimitEndpoint, marginApi, marginVersion), HttpMethod.Get, ct, parameters, true).ConfigureAwait(false);           
         }
@@ -1128,6 +1201,7 @@ namespace Binance.Net.Clients.SpotApi
                 { "positionId", positionId },
                 { "renewable", renewable },
             };
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
             return await _baseClient.SendRequestInternal<BinanceStakingResult>(_baseClient.GetUrl(setAutoStakingEndpoint, marginApi, marginVersion), HttpMethod.Post, ct, parameters, true).ConfigureAwait(false);
         }
@@ -1140,9 +1214,47 @@ namespace Binance.Net.Clients.SpotApi
                 { "product", EnumConverter.GetString(product) },
                 { "productId", productId }
             };
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
             return await _baseClient.SendRequestInternal<BinanceStakingPersonalQuota>(_baseClient.GetUrl(stakingQuotaLeftEndpoint, marginApi, marginVersion), HttpMethod.Get, ct, parameters, true).ConfigureAwait(false);
         }
+        #endregion
+
+        #region Portfolio margin
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<BinancePortfolioMarginInfo>> GetPortfolioMarginAccountInfoAsync (long? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+            return await _baseClient.SendRequestInternal<BinancePortfolioMarginInfo>(_baseClient.GetUrl(portfolioMarginAccountEndpoint, marginApi, marginVersion), HttpMethod.Get, ct, parameters, true, weight: 1).ConfigureAwait(false);
+        }
+        
+        /// <inheritdoc />
+        public async Task<WebCallResult<IEnumerable<BinancePortfolioMarginCollateralRate>>> GetPortfolioMarginCollateralRateAsync(long? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+            return await _baseClient.SendRequestInternal<IEnumerable<BinancePortfolioMarginCollateralRate>>(_baseClient.GetUrl(portfolioMarginCollateralRateEndpoint, marginApi, marginVersion), HttpMethod.Get, ct, parameters, true, weight: 50).ConfigureAwait(false);
+        }
+
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<BinancePortfolioMarginLoan>> GetPortfolioMarginBankruptcyLoanAsync(long? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+            return await _baseClient.SendRequestInternal<BinancePortfolioMarginLoan>(_baseClient.GetUrl(portfolioMarginLoanEndpoint, marginApi, marginVersion), HttpMethod.Get, ct, parameters, true, weight: 500).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<BinanceTransaction>> PortfolioMarginBankruptcyLoanRepayAsync(long? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+            return await _baseClient.SendRequestInternal<BinanceTransaction>(_baseClient.GetUrl(portfolioMarginRepayEndpoint, marginApi, marginVersion), HttpMethod.Post, ct, parameters, true, weight: 3000).ConfigureAwait(false);
+        }
+
         #endregion
     }
 }

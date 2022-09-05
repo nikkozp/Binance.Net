@@ -51,6 +51,10 @@ namespace Binance.Net.Objects.Models.Spot
         /// </summary>
         public bool IceBergAllowed { get; set; }
         /// <summary>
+        /// Cancel replace allowed
+        /// </summary>
+        public bool CancelReplaceAllowed { get; set; }
+        /// <summary>
         /// Spot trading orders allowed
         /// </summary>
         public bool IsSpotTradingAllowed { get; set; }
@@ -122,6 +126,11 @@ namespace Binance.Net.Objects.Models.Spot
         [JsonIgnore]
         public BinanceSymbolMinNotionalFilter? MinNotionalFilter => Filters.OfType<BinanceSymbolMinNotionalFilter>().FirstOrDefault();
         /// <summary>
+        /// Filter for the minimal quote quantity of an order for this symbol
+        /// </summary>
+        [JsonIgnore]
+        public BinanceSymbolNotionalFilter? NotionalFilter => Filters.OfType<BinanceSymbolNotionalFilter>().FirstOrDefault();
+        /// <summary>
         /// Filter for the max accuracy of the price for this symbol
         /// </summary>
         [JsonIgnore]
@@ -131,6 +140,11 @@ namespace Binance.Net.Objects.Models.Spot
         /// </summary>
         [JsonIgnore]
         public BinanceSymbolPercentPriceFilter? PricePercentFilter => Filters.OfType<BinanceSymbolPercentPriceFilter>().FirstOrDefault();
+        /// <summary>
+        /// Filter for the maximum deviation of the price per side
+        /// </summary>
+        [JsonIgnore]
+        public BinanceSymbolPercentPriceBySideFilter? PricePercentByPriceFilter => Filters.OfType<BinanceSymbolPercentPriceBySideFilter>().FirstOrDefault();
         /// <summary>
         /// Filter for the maximum position on a symbol
         /// </summary>

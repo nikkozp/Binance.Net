@@ -7,19 +7,56 @@ Binance.Net is a wrapper around the Binance API as described on [Binance](https:
 
 [Documentation](https://jkorf.github.io/Binance.Net/)
 
-## Donate / Sponsor
-I develop and maintain this package on my own for free in my spare time. Donations are greatly appreciated. If you prefer to donate any other currency please contact me.
+## Support the project
+I develop and maintain this package on my own for free in my spare time, any support is greatly appreciated.
+
+### Referral link
+Sign up using the following referral link to pay a small percentage of the trading fees you pay to support the project instead of paying them straight to Binance. This doesn't cost you a thing!
+[Link](https://accounts.binance.com/en/register?ref=10153680)
+
+### Donate
+Make a one time donation in a crypto currency of your choice. If you prefer to donate a currency not listed here please contact me.
 
 **Btc**:  12KwZk3r2Y3JZ2uMULcjqqBvXmpDwjhhQS  
 **Eth**:  0x069176ca1a4b1d6e0b7901a6bc0dbf3bb0bf5cc2  
 **Nano**: xrb_1ocs3hbp561ef76eoctjwg85w5ugr8wgimkj8mfhoyqbx4s1pbc74zggw7gs  
 
-Alternatively, sponsor me on Github using [Github Sponsors](https://github.com/sponsors/JKorf)  
+### Sponsor
+Alternatively, sponsor me on Github using [Github Sponsors](https://github.com/sponsors/JKorf). 
 
 ## Discord
 A Discord server is available [here](https://discord.gg/MSpeEtSY8t). For discussion and/or questions around the CryptoExchange.Net and implementation libraries, feel free to join.
 
 ## Release notes
+* Version 8.1.10 - 04 Sep 2022
+    * Added missing (and future) account types, fixes warnings being generated in SpotApi.Trading.GetExchangeInfoAsync
+
+* Version 8.1.9 - 24 Aug 2022
+    * Added SpotApi.ExchangeData.GetUiKlinesAsync endpoint
+    * Added 1 second kline interval support
+    * Added new Notional filter for BinanceSymbols
+    * Added Brokered to SpotApi.Account.GetAccountInfoAsync response model
+
+* Version 8.1.8 - 13 Aug 2022
+    * Added new endpoints:
+        * SpotApi.Trading.ReplaceOrderAsync
+        * SpotApi.ExchangeData.GetRollingWindowTickersAsync
+        * SpotApi.Account.GetBalancesAsync
+        * SpotApi.Account.GetMarginDustLogAsync
+        * SpotApi.Acocunt.PortfolioMargin endpoints
+    * Added rolling window ticker socket stream
+    * Added ListenKey property to user stream updates
+    * Fixed BinanceRebate quantity deserialization
+    * Updated some request weights
+
+* Version 8.1.7 - 18 Jul 2022
+    * Updated CryptoExchange.Net
+
+* Version 8.1.6 - 16 Jul 2022
+    * Fixed MarginToIsolatedMargin UniversalTransferType serialization
+    * Fixed max position filter serialization
+    * Updated CryptoExchange.Net
+
 * Version 8.1.5 - 12 Jul 2022
     * Fixed missing AccountType enum value causing error when deserializing GetExchangeInfoAsync
     * Fixed future deserialization failing when there's an unknown account type

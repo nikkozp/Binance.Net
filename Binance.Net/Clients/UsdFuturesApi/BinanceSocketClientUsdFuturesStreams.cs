@@ -384,7 +384,10 @@ namespace Binance.Net.Clients.UsdFuturesApi
                         {
                             var result = _baseClient.DeserializeInternal<BinanceFuturesStreamConfigUpdate>(token);
                             if (result)
+                            {
+                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
                                 onConfigUpdate?.Invoke(data.As(result.Data, result.Data.LeverageUpdateData?.Symbol));
+                            }
                             else
                                 _log.Write(LogLevel.Warning, "Couldn't deserialize data received from config stream: " + result.Error);
 
@@ -394,7 +397,10 @@ namespace Binance.Net.Clients.UsdFuturesApi
                         {
                             var result = _baseClient.DeserializeInternal<BinanceFuturesStreamMarginUpdate>(token);
                             if (result)
+                            {
+                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
                                 onMarginUpdate?.Invoke(data.As(result.Data));
+                            }
                             else
                                 _log.Write(LogLevel.Warning, "Couldn't deserialize data received from order stream: " + result.Error);
                             break;
@@ -403,7 +409,10 @@ namespace Binance.Net.Clients.UsdFuturesApi
                         {
                             var result = _baseClient.DeserializeInternal<BinanceFuturesStreamAccountUpdate>(token);
                             if (result.Success)
+                            {
+                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
                                 onAccountUpdate?.Invoke(data.As(result.Data));
+                            }
                             else
                                 _log.Write(LogLevel.Warning, "Couldn't deserialize data received from account stream: " + result.Error);
 
@@ -413,7 +422,10 @@ namespace Binance.Net.Clients.UsdFuturesApi
                         {
                             var result = _baseClient.DeserializeInternal<BinanceFuturesStreamOrderUpdate>(token);
                             if (result)
+                            {
+                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
                                 onOrderUpdate?.Invoke(data.As(result.Data, result.Data.UpdateData.Symbol));
+                            }
                             else
                                 _log.Write(LogLevel.Warning, "Couldn't deserialize data received from order stream: " + result.Error);
                             break;
@@ -422,7 +434,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
                         {
                             var result = _baseClient.DeserializeInternal<BinanceStreamEvent>(token);
                             if (result)
-                                onListenKeyExpired?.Invoke(data.As(result.Data));
+                                onListenKeyExpired?.Invoke(data.As(result.Data, combinedToken["stream"]!.Value<string>()));                            
                             else
                                 _log.Write(LogLevel.Warning, "Couldn't deserialize data received from the expired listen key event: " + result.Error);
                             break;

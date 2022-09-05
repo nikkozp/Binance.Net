@@ -33,8 +33,10 @@ namespace Binance.Net.Clients.SpotApi
         private const string aggregatedTradesEndpoint = "aggTrades";
         private const string recentTradesEndpoint = "trades";
         private const string historicalTradesEndpoint = "historicalTrades";
+        private const string uiKlinesEndpoint = "uiKlines";
         private const string klinesEndpoint = "klines";
         private const string price24HEndpoint = "ticker/24hr";
+        private const string rollingWindowPriceEndpoint = "ticker";
         private const string allPricesEndpoint = "ticker/price";
         private const string bookPricesEndpoint = "ticker/bookTicker";
         private const string averagePriceEndpoint = "avgPrice";
@@ -272,6 +274,27 @@ namespace Binance.Net.Clients.SpotApi
 
         #endregion
 
+        #region UI Kline Data
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<IEnumerable<IBinanceKline>>> GetUiKlinesAsync(string symbol, KlineInterval interval, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
+        {
+            symbol.ValidateBinanceSymbol();
+            limit?.ValidateIntBetween(nameof(limit), 1, 1500);
+            var parameters = new Dictionary<string, object> {
+                { "symbol", symbol },
+                { "interval", JsonConvert.SerializeObject(interval, new KlineIntervalConverter(false)) }
+            };
+            parameters.AddOptionalParameter("startTime", DateTimeConverter.ConvertToMilliseconds(startTime));
+            parameters.AddOptionalParameter("endTime", DateTimeConverter.ConvertToMilliseconds(endTime));
+            parameters.AddOptionalParameter("limit", limit?.ToString(CultureInfo.InvariantCulture));
+
+            var result = await _baseClient.SendRequestInternal<IEnumerable<BinanceSpotKline>>(_baseClient.GetUrl(uiKlinesEndpoint, api, publicVersion), HttpMethod.Get, ct, parameters).ConfigureAwait(false);
+            return result.As<IEnumerable<IBinanceKline>>(result.Data);
+        }
+
+        #endregion
+
         #region Current Average Price
 
         /// <inheritdoc />
@@ -318,6 +341,44 @@ namespace Binance.Net.Clients.SpotApi
         }
 
         #endregion
+
+        #region Rolling window price change ticker
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<IBinance24HPrice>> GetRollingWindowTickerAsync(string symbol, TimeSpan? windowSize = null, CancellationToken ct = default)
+        {
+            symbol.ValidateBinanceSymbol();
+            var parameters = new Dictionary<string, object> { { "symbol", symbol } };
+            parameters.AddOptionalParameter("windowSize", windowSize == null ? null : GetWindowSize(windowSize.Value));
+
+            var result = await _baseClient.SendRequestInternal<Binance24HPrice>(_baseClient.GetUrl(rollingWindowPriceEndpoint, api, publicVersion), HttpMethod.Get, ct, parameters, weight: 2).ConfigureAwait(false);
+            return result.As<IBinance24HPrice>(result.Data);
+        }
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<IEnumerable<IBinance24HPrice>>> GetRollingWindowTickersAsync(IEnumerable<string> symbols, TimeSpan? windowSize = null, CancellationToken ct = default)
+        {
+            foreach (var symbol in symbols)
+                symbol.ValidateBinanceSymbol();
+
+            var parameters = new Dictionary<string, object> { { "symbols", $"[{string.Join(",", symbols.Select(s => $"\"{s}\""))}]" } };
+            parameters.AddOptionalParameter("windowSize", windowSize == null ? null : GetWindowSize(windowSize.Value));
+            var symbolCount = symbols.Count();
+            var weight = Math.Min(symbolCount * 2, 100);
+            var result = await _baseClient.SendRequestInternal<IEnumerable<Binance24HPrice>>(_baseClient.GetUrl(rollingWindowPriceEndpoint, api, publicVersion), HttpMethod.Get, ct, parameters, weight: weight).ConfigureAwait(false);
+            return result.As<IEnumerable<IBinance24HPrice>>(result.Data);
+        }
+
+        private string GetWindowSize(TimeSpan timeSpan)
+        {
+            if (timeSpan.TotalHours < 1)
+                return timeSpan.TotalMinutes + "m";
+            else if (timeSpan.TotalHours < 24)
+                return timeSpan.TotalHours + "h";
+            return timeSpan.TotalDays + "d";
+        }
+        #endregion
+
 
         #region Symbol Price Ticker
 

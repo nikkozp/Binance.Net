@@ -203,6 +203,30 @@ namespace Binance.Net.Clients.SpotApi
 
         #endregion
 
+        #region Individual Market Rolling Window Tickers Stream
+
+        /// <inheritdoc />
+        public async Task<CallResult<UpdateSubscription>> SubscribeToRollingWindowTickerUpdatesAsync(string symbol, TimeSpan windowSize,
+            Action<DataEvent<BinanceStreamRollingWindowTick>> onMessage, CancellationToken ct = default)
+        {
+            var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamRollingWindowTick>>>(data => onMessage(data.As(data.Data.Data, data.Data.Stream)));
+            return await _baseClient.SubscribeInternal(this, BaseAddress, new[] { $"{symbol.ToLowerInvariant()}@ticker_{windowSize.TotalHours}h" }, handler, ct).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region All Market Rolling Window Tickers Stream
+
+        /// <inheritdoc />
+        public async Task<CallResult<UpdateSubscription>> SubscribeToAllRollingWindowTickerUpdatesAsync(TimeSpan windowSize,
+            Action<DataEvent<IEnumerable<BinanceStreamRollingWindowTick>>> onMessage, CancellationToken ct = default)
+        {
+            var handler = new Action<DataEvent<BinanceCombinedStream<IEnumerable<BinanceStreamRollingWindowTick>>>>(data => onMessage(data.As(data.Data.Data, data.Data.Stream)));
+            return await _baseClient.SubscribeInternal(this, BaseAddress, new[] { $"!ticker_{windowSize.TotalHours}h@arr" }, handler, ct).ConfigureAwait(false);
+        }
+
+        #endregion
+
         #region Individual Symbol Book Ticker Streams
 
         /// <inheritdoc />
@@ -353,7 +377,10 @@ namespace Binance.Net.Clients.SpotApi
                         {
                             var result = _baseClient.DeserializeInternal<BinanceStreamOrderUpdate>(token);
                             if (result)
+                            {
+                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
                                 onOrderUpdateMessage?.Invoke(data.As(result.Data, result.Data.OrderId.ToString()));
+                            }
                             else
                                 _log.Write(LogLevel.Warning,
                                     "Couldn't deserialize data received from order stream: " + result.Error);
@@ -363,7 +390,10 @@ namespace Binance.Net.Clients.SpotApi
                         {
                             var result = _baseClient.DeserializeInternal<BinanceStreamOrderList>(token);
                             if (result)
+                            {
+                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
                                 onOcoOrderUpdateMessage?.Invoke(data.As(result.Data, result.Data.Id.ToString()));
+                            }
                             else
                                 _log.Write(LogLevel.Warning,
                                     "Couldn't deserialize data received from oco order stream: " + result.Error);
@@ -373,7 +403,10 @@ namespace Binance.Net.Clients.SpotApi
                         {
                             var result = _baseClient.DeserializeInternal<BinanceStreamPositionsUpdate>(token);
                             if (result)
+                            {
+                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
                                 onAccountPositionMessage?.Invoke(data.As(result.Data));
+                            }
                             else
                                 _log.Write(LogLevel.Warning,
                                     "Couldn't deserialize data received from account position stream: " + result.Error);
@@ -383,7 +416,10 @@ namespace Binance.Net.Clients.SpotApi
                         {
                             var result = _baseClient.DeserializeInternal<BinanceStreamBalanceUpdate>(token);
                             if (result)
+                            {
+                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
                                 onAccountBalanceUpdate?.Invoke(data.As(result.Data, result.Data.Asset));
+                            }
                             else
                                 _log.Write(LogLevel.Warning,
                                     "Couldn't deserialize data received from account position stream: " + result.Error);
