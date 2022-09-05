@@ -11898,11 +11898,6 @@
             Cumulative quantity
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.LastFilledQuantity">
-            <summary>
-            The quantity of the order that is executed
-            </summary>
-        </member>
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.Quantity">
             <summary>
             The original quantity of the order
