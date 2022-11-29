@@ -12,6 +12,7 @@ using Binance.Net.Objects.Internal;
 using Binance.Net.Objects.Models;
 using Binance.Net.Objects.Models.Spot;
 using Binance.Net.Objects.Models.Spot.Blvt;
+using Binance.Net.Objects.Models.Spot.ConvertTransfer;
 using Binance.Net.Objects.Models.Spot.IsolatedMargin;
 using Binance.Net.Objects.Models.Spot.Margin;
 using Binance.Net.Objects.Models.Spot.PortfolioMargin;
@@ -66,6 +67,8 @@ namespace Binance.Net.Clients.SpotApi
         private const string interestRateHistoryEndpoint = "margin/interestRateHistory";
         private const string interestMarginDataEndpoint = "margin/crossMarginData";
         private const string forceLiquidationHistoryEndpoint = "margin/forceLiquidationRec";
+        private const string marginLevelInformation = "margin/tradeCoeff";
+
         private const string isolatedMargingTierEndpoint = "margin/isolatedMarginTier";
 
         private const string isolatedMarginTransferHistoryEndpoint = "margin/isolated/transfer";
@@ -543,6 +546,25 @@ namespace Binance.Net.Clients.SpotApi
             };
 
             return await _baseClient.SendRequestInternal<object>(_baseClient.GetUrl(closeListenKeyEndpoint, "api", "3"), HttpMethod.Delete, ct, parameters).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Margin Level Information
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<BinanceMarginLevel>> GetMarginLevelInformationAsync(string email, int? receiveWindow = null, CancellationToken ct = default)
+        {
+            email.ValidateNotNull(nameof(email));
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "email", email },
+            };
+
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+
+            return await _baseClient.SendRequestInternal<BinanceMarginLevel>(_baseClient.GetUrl(marginLevelInformation, marginApi, marginVersion), HttpMethod.Get, ct, parameters, true, weight: 10).ConfigureAwait(false);
         }
 
         #endregion
@@ -1256,5 +1278,6 @@ namespace Binance.Net.Clients.SpotApi
         }
 
         #endregion
+
     }
 }

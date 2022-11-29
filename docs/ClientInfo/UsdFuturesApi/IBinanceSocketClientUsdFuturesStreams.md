@@ -7,6 +7,9 @@ parent: Socket API documentation
 `BinanceSocketClient > UsdFuturesStreams`  
 *Binance USD futures streams*
   
+***
+*The factory for creating sockets. Used for unit testing*  
+**IWebsocketFactory SocketFactory { get; set; }**  
 
 ***
 
@@ -176,7 +179,7 @@ var result = await client.UsdFuturesStreams.SubscribeToAllTickerUpdatesAsync(/* 
 ```  
 
 ```csharp  
-Task<CallResult<UpdateSubscription>> SubscribeToAllTickerUpdatesAsync(Action<DataEvent<IEnumerable<IBinanceTick>>> onMessage, CancellationToken ct = default);  
+Task<CallResult<UpdateSubscription>> SubscribeToAllTickerUpdatesAsync(Action<DataEvent<IEnumerable<IBinance24HPrice>>> onMessage, CancellationToken ct = default);  
 ```  
 
 |Parameter|Description|
@@ -279,7 +282,7 @@ var result = await client.UsdFuturesStreams.SubscribeToContinuousContractKlineUp
 ```  
 
 ```csharp  
-Task<CallResult<UpdateSubscription>> SubscribeToContinuousContractKlineUpdatesAsync(string pair, ContractType contractType, KlineInterval interval, Action<DataEvent<BinanceStreamKlineData>> onMessage, CancellationToken ct = default);  
+Task<CallResult<UpdateSubscription>> SubscribeToContinuousContractKlineUpdatesAsync(string pair, ContractType contractType, KlineInterval interval, Action<DataEvent<BinanceStreamContinuousKlineData>> onMessage, CancellationToken ct = default);  
 ```  
 
 |Parameter|Description|
@@ -307,7 +310,7 @@ var result = await client.UsdFuturesStreams.SubscribeToContinuousContractKlineUp
 ```  
 
 ```csharp  
-Task<CallResult<UpdateSubscription>> SubscribeToContinuousContractKlineUpdatesAsync(IEnumerable<string> pairs, ContractType contractType, KlineInterval interval, Action<DataEvent<BinanceStreamKlineData>> onMessage, CancellationToken ct = default);  
+Task<CallResult<UpdateSubscription>> SubscribeToContinuousContractKlineUpdatesAsync(IEnumerable<string> pairs, ContractType contractType, KlineInterval interval, Action<DataEvent<BinanceStreamContinuousKlineData>> onMessage, CancellationToken ct = default);  
 ```  
 
 |Parameter|Description|
@@ -711,7 +714,7 @@ var result = await client.UsdFuturesStreams.SubscribeToTickerUpdatesAsync(/* par
 ```  
 
 ```csharp  
-Task<CallResult<UpdateSubscription>> SubscribeToTickerUpdatesAsync(string symbol, Action<DataEvent<IBinanceTick>> onMessage, CancellationToken ct = default);  
+Task<CallResult<UpdateSubscription>> SubscribeToTickerUpdatesAsync(string symbol, Action<DataEvent<IBinance24HPrice>> onMessage, CancellationToken ct = default);  
 ```  
 
 |Parameter|Description|
@@ -737,7 +740,7 @@ var result = await client.UsdFuturesStreams.SubscribeToTickerUpdatesAsync(/* par
 ```  
 
 ```csharp  
-Task<CallResult<UpdateSubscription>> SubscribeToTickerUpdatesAsync(IEnumerable<string> symbols, Action<DataEvent<IBinanceTick>> onMessage, CancellationToken ct = default);  
+Task<CallResult<UpdateSubscription>> SubscribeToTickerUpdatesAsync(IEnumerable<string> symbols, Action<DataEvent<IBinance24HPrice>> onMessage, CancellationToken ct = default);  
 ```  
 
 |Parameter|Description|

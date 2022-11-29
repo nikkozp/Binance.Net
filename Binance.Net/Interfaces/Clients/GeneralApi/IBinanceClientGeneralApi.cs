@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CryptoExchange.Net.Interfaces;
+using System;
 
 namespace Binance.Net.Interfaces.Clients.GeneralApi
 {
@@ -7,6 +8,11 @@ namespace Binance.Net.Interfaces.Clients.GeneralApi
     /// </summary>
     public interface IBinanceClientGeneralApi : IDisposable
     {
+        /// <summary>
+        /// The factory for creating requests. Used for unit testing
+        /// </summary>
+        IRequestFactory RequestFactory { get; set; }
+
         /// <summary>
         /// Endpoints related to brokerage
         /// </summary>
@@ -18,9 +24,14 @@ namespace Binance.Net.Interfaces.Clients.GeneralApi
         public IBinanceClientGeneralApiFutures Futures { get; }
 
         /// <summary>
-        /// Endpoints related to lending/saving
+        /// Endpoints related to savings
         /// </summary>
-        public IBinanceClientGeneralApiLending Lending { get; }
+        public IBinanceClientGeneralApiSavings Savings { get; }
+
+        /// <summary>
+        /// Endpoints related to crypto loans
+        /// </summary>
+        public IBinanceClientGeneralApiCryptoLoans CryptoLoans { get; }
 
         /// <summary>
         /// Endpoints related to mining

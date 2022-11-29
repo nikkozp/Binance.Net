@@ -11,6 +11,7 @@ using Binance.Net.Objects.Models;
 using Binance.Net.Objects.Models.Spot;
 using Binance.Net.Objects.Models.Spot.Blvt;
 using Binance.Net.Objects.Models.Spot.BSwap;
+using Binance.Net.Objects.Models.Spot.ConvertTransfer;
 using Binance.Net.Objects.Models.Spot.Margin;
 using Binance.Net.Objects.Models.Spot.Staking;
 using CryptoExchange.Net;
@@ -103,6 +104,10 @@ namespace Binance.Net.Clients.SpotApi
         private const string stakingRedeemEndpoint = "staking/redeem";
         private const string stakingPositionEndpoint = "staking/position";
         private const string stakingHistoryEndpoint = "staking/stakingRecord";
+
+        // Convert transfer
+        private const string convertTransferEndpoint = "asset/convert-transfer";
+        private const string convertTransferHistoryEndpoint = "asset/convert-transfer/queryByPage";
 
         private readonly BinanceClientSpotApi _baseClient;
         private readonly Log _log;
@@ -315,7 +320,11 @@ namespace Binance.Net.Clients.SpotApi
                 var jsonData = result.OriginalData.ToJToken(_log);
                 if (jsonData != null)
                 {
-                    var error = jsonData["data"]?["cancelResult"]?.ToString() == "FAILURE" ? jsonData["data"]!["cancelResponse"] : jsonData["data"]!["newOrderResponse"];
+                    var dataNode = jsonData["data"];
+                    if (dataNode == null)
+                        return result;
+
+                    var error = dataNode?["cancelResult"]?.ToString() == "FAILURE" ? dataNode!["cancelResponse"] : jsonData["data"]!["newOrderResponse"];
                     if (error != null && error.HasValues)
                         return result.AsError<BinanceReplaceOrderResult>(new ServerError(error!.Value<int>("code"), error.Value<string>("msg")!));
                 }
@@ -1245,6 +1254,39 @@ namespace Binance.Net.Clients.SpotApi
             return await _baseClient.SendRequestInternal<IEnumerable<BinanceStakingHistory>>(_baseClient.GetUrl(stakingHistoryEndpoint, marginApi, marginVersion), HttpMethod.Get, ct, parameters, true, weight: 1).ConfigureAwait(false);
         }
 
+        #endregion
+
+        #region Convert Transfer
+        /// <inheritdoc />
+        public async Task<WebCallResult<BinanceConvertTransferResult>> ConvertTransferAsync(string clientTransferId, string asset, decimal quantity, string targetAsset, long? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>()
+            {
+                { "clientTranId", clientTransferId },
+                { "asset", asset },
+                { "amount", quantity },
+                { "targetAsset", targetAsset }
+            };
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+            return await _baseClient.SendRequestInternal<BinanceConvertTransferResult>(_baseClient.GetUrl(convertTransferEndpoint, marginApi, marginVersion), HttpMethod.Post, ct, parameters, true, weight: 5).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<BinanceQueryRecords<BinanceConvertTransferRecord>>> GetConvertTransferHistoryAsync(DateTime startTime, DateTime endTime, long? transferId = null, string? asset = null, int? page = null, int? limit = null, long? receiveWindow = null, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>()
+            {
+                { "startTime", DateTimeConverter.ConvertToMilliseconds(startTime) },
+                { "endTime", DateTimeConverter.ConvertToMilliseconds(endTime) },
+            };
+            parameters.AddOptionalParameter("tranId", transferId);
+            parameters.AddOptionalParameter("asset", asset);
+            parameters.AddOptionalParameter("current", page);
+            parameters.AddOptionalParameter("size", limit);
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+
+            return await _baseClient.SendRequestInternal<BinanceQueryRecords<BinanceConvertTransferRecord>>(_baseClient.GetUrl(convertTransferHistoryEndpoint, marginApi, marginVersion), HttpMethod.Post, ct, parameters, true, weight: 5).ConfigureAwait(false);
+        }
         #endregion
     }
 }

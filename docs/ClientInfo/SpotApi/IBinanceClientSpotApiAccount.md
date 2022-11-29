@@ -774,6 +774,33 @@ Task<WebCallResult<BinanceQueryRecords<BinanceIsolatedMarginTransfer>>> GetIsola
 
 ***
 
+## GetIsolatedMarginTierDataAsync  
+
+[https://binance-docs.github.io/apidocs/spot/en/#query-isolated-margin-tier-data-user_data](https://binance-docs.github.io/apidocs/spot/en/#query-isolated-margin-tier-data-user_data)  
+<p>
+
+*Get isolated margin tier data*  
+
+```csharp  
+var client = new BinanceClient();  
+var result = await client.SpotApi.Account.GetIsolatedMarginTierDataAsync(/* parameters */);  
+```  
+
+```csharp  
+Task<WebCallResult<IEnumerable<BinanceIsolatedMarginTierData>>> GetIsolatedMarginTierDataAsync(string symbol, int? tier = default, long? receiveWindow = default, CancellationToken ct = default);  
+```  
+
+|Parameter|Description|
+|---|---|
+|symbol|The symbol|
+|_[Optional]_ tier|Tier|
+|_[Optional]_ receiveWindow|The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request|
+|_[Optional]_ ct|Cancellation token|
+
+</p>
+
+***
+
 ## GetLeveragedTokensUserLimitAsync  
 
 [https://binance-docs.github.io/apidocs/spot/en/#get-blvt-user-limit-info-user_data](https://binance-docs.github.io/apidocs/spot/en/#get-blvt-user-limit-info-user_data)  
@@ -937,6 +964,32 @@ Task<WebCallResult<IEnumerable<BinanceInterestRateHistory>>> GetMarginInterestRa
 |_[Optional]_ startTime|Filter by startTime from|
 |_[Optional]_ endTime|Filter by endTime from|
 |_[Optional]_ limit|Limit of the amount of results|
+|_[Optional]_ receiveWindow|The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request|
+|_[Optional]_ ct|Cancellation token|
+
+</p>
+
+***
+
+## GetMarginLevelInformationAsync  
+
+[https://binance-docs.github.io/apidocs/spot/en/#get-summary-of-margin-account-user_data](https://binance-docs.github.io/apidocs/spot/en/#get-summary-of-margin-account-user_data)  
+<p>
+
+*Get personal margin level information for your account*  
+
+```csharp  
+var client = new BinanceClient();  
+var result = await client.SpotApi.Account.GetMarginLevelInformationAsync(/* parameters */);  
+```  
+
+```csharp  
+Task<WebCallResult<BinanceMarginLevel>> GetMarginLevelInformationAsync(string email, int? receiveWindow = default, CancellationToken ct = default);  
+```  
+
+|Parameter|Description|
+|---|---|
+|email|account email|
 |_[Optional]_ receiveWindow|The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request|
 |_[Optional]_ ct|Cancellation token|
 
