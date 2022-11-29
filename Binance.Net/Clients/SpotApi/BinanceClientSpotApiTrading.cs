@@ -322,7 +322,7 @@ namespace Binance.Net.Clients.SpotApi
             }
 
             if (result && result.Data.NewOrderResult == OrderOperationResult.Success)
-                _baseClient.InvokeOrderPlaced(new OrderId() { SourceObject = result.Data, Id = result.Data.NewOrderResponse!.Id.ToString(CultureInfo.InvariantCulture) });
+                _baseClient.InvokeOrderPlaced(new OrderId() { SourceObject = result.Data, Id = result.Data.NewOrderResponse!.OrderId.ToString(CultureInfo.InvariantCulture) });
             return result;
         }
         #endregion
