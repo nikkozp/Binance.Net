@@ -74,6 +74,12 @@ namespace Binance.Net.Objects.Models.Futures
         public decimal Quantity { get; set; }
 
         /// <summary>
+        /// Current notional = PositionInitialMargin * Leverage
+        /// </summary>
+        [JsonProperty("notional")]
+        public decimal Notional { get; set; }
+
+        /// <summary>
         /// Last update time
         /// </summary>
         [JsonConverter(typeof(DateTimeConverter))]
