@@ -66,7 +66,7 @@ namespace Binance.Net.Clients.CoinFuturesApi
 
         /// <inheritdoc />
         protected override AuthenticationProvider CreateAuthenticationProvider(ApiCredentials credentials)
-            => new BinanceAuthenticationProvider(credentials);
+            => new BinanceAuthenticationProvider((BinanceApiCredentials)credentials);
 
         #region methods
 
@@ -574,7 +574,7 @@ namespace Binance.Net.Clients.CoinFuturesApi
             if (!connection.Connected)
                 return true;
 
-            await connection.SendAndWaitAsync(unsub, Options.SocketResponseTimeout, subscription, data =>
+            await connection.SendAndWaitAsync(unsub, Options.SocketResponseTimeout, null, data =>
             {
                 if (data.Type != JTokenType.Object)
                     return false;

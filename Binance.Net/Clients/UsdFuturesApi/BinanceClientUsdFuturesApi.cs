@@ -100,7 +100,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
 
         /// <inheritdoc />
         protected override AuthenticationProvider CreateAuthenticationProvider(ApiCredentials credentials)
-            => new BinanceAuthenticationProvider(credentials);
+            => new BinanceAuthenticationProvider((BinanceApiCredentials)credentials);
        
         internal Uri GetUrl(string endpoint, string api, string? version = null)
         {
@@ -260,7 +260,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
             => ExchangeData.GetServerTimeAsync();
 
         /// <inheritdoc />
-        public override TimeSyncInfo GetTimeSyncInfo()
+        public override TimeSyncInfo? GetTimeSyncInfo()
             => new TimeSyncInfo(_log, Options.UsdFuturesApiOptions.AutoTimestamp, Options.UsdFuturesApiOptions.TimestampRecalculationInterval, TimeSyncState);
 
         /// <inheritdoc />
@@ -608,6 +608,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
 
         private static KlineInterval GetKlineIntervalFromTimespan(TimeSpan timeSpan)
         {
+            if (timeSpan == TimeSpan.FromSeconds(1)) return KlineInterval.OneSecond;
             if (timeSpan == TimeSpan.FromMinutes(1)) return KlineInterval.OneMinute;
             if (timeSpan == TimeSpan.FromMinutes(3)) return KlineInterval.ThreeMinutes;
             if (timeSpan == TimeSpan.FromMinutes(5)) return KlineInterval.FiveMinutes;
