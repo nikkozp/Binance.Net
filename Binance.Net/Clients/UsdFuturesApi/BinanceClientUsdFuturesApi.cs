@@ -264,7 +264,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
             => new TimeSyncInfo(_log, Options.UsdFuturesApiOptions.AutoTimestamp, Options.UsdFuturesApiOptions.TimestampRecalculationInterval, TimeSyncState);
 
         /// <inheritdoc />
-        public override TimeSpan GetTimeOffset()
+        public override TimeSpan? GetTimeOffset()
             => TimeSyncState.TimeOffset;
 
         /// <inheritdoc />

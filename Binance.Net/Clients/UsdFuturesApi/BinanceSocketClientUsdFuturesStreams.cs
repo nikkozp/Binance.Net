@@ -563,7 +563,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
             if (!connection.Connected)
                 return true;
 
-            await connection.SendAndWaitAsync(unsub, Options.SocketResponseTimeout, data =>
+            await connection.SendAndWaitAsync(unsub, Options.SocketResponseTimeout, subscription, data =>
             {
                 if (data.Type != JTokenType.Object)
                     return false;

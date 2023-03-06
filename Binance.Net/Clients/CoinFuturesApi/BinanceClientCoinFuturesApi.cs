@@ -238,7 +238,7 @@ namespace Binance.Net.Clients.CoinFuturesApi
             => new TimeSyncInfo(_log, Options.CoinFuturesApiOptions.AutoTimestamp, Options.CoinFuturesApiOptions.TimestampRecalculationInterval, TimeSyncState);
 
         /// <inheritdoc />
-        public override TimeSpan GetTimeOffset()
+        public override TimeSpan? GetTimeOffset()
             => TimeSyncState.TimeOffset;
 
         /// <inheritdoc />

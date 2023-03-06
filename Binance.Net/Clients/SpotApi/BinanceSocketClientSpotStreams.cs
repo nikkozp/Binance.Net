@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Binance.Net.Converters;
@@ -16,6 +17,7 @@ using Binance.Net.Objects.Models.Spot.Blvt;
 using Binance.Net.Objects.Models.Spot.Socket;
 using CryptoExchange.Net;
 using CryptoExchange.Net.Authentication;
+using CryptoExchange.Net.CommonObjects;
 using CryptoExchange.Net.Logging;
 using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
@@ -473,6 +475,7 @@ namespace Binance.Net.Clients.SpotApi
         }
 
         #endregion
+
         #endregion
 
         internal Task<CallResult<UpdateSubscription>> SubscribeAsync<T>(string url, IEnumerable<string> topics, Action<DataEvent<T>> onData, CancellationToken ct)
@@ -563,7 +566,7 @@ namespace Binance.Net.Clients.SpotApi
             if (!connection.Connected)
                 return true;
 
-            await connection.SendAndWaitAsync(unsub, Options.SocketResponseTimeout, data =>
+            await connection.SendAndWaitAsync(unsub, Options.SocketResponseTimeout, subscription, data =>
             {
                 if (data.Type != JTokenType.Object)
                     return false;

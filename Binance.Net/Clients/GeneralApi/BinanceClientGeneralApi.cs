@@ -98,7 +98,7 @@ namespace Binance.Net.Clients.GeneralApi
             => new TimeSyncInfo(_log, Options.SpotApiOptions.AutoTimestamp, Options.SpotApiOptions.TimestampRecalculationInterval, BinanceClientSpotApi.TimeSyncState);
 
         /// <inheritdoc />
-        public override TimeSpan GetTimeOffset()
+        public override TimeSpan? GetTimeOffset()
             => BinanceClientSpotApi.TimeSyncState.TimeOffset;
 
         /// <inheritdoc />
