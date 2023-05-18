@@ -20,6 +20,7 @@ using Binance.Net.Interfaces.Clients.SpotApi;
 using CryptoExchange.Net.CommonObjects;
 using CryptoExchange.Net.Interfaces.CommonClients;
 using Newtonsoft.Json.Linq;
+using CryptoExchange.Net.Converters;
 
 namespace Binance.Net.Clients.SpotApi
 {
@@ -92,6 +93,9 @@ namespace Binance.Net.Clients.SpotApi
             bool? isIsolated = null,
             OrderResponseType? orderResponseType = null,
             int? trailingDelta = null,
+            int? strategyId = null,
+            int? strategyType = null,
+            SelfTradePreventionMode? selfTradePreventionMode = null,
             int? receiveWindow = null,
             int weight = 1,
             CancellationToken ct = default) where T : BinancePlacedOrder
@@ -133,6 +137,9 @@ namespace Binance.Net.Clients.SpotApi
             parameters.AddOptionalParameter("isIsolated", isIsolated);
             parameters.AddOptionalParameter("newOrderRespType", orderResponseType == null ? null : JsonConvert.SerializeObject(orderResponseType, new OrderResponseTypeConverter(false)));
             parameters.AddOptionalParameter("trailingDelta", trailingDelta);
+            parameters.AddOptionalParameter("strategyId", strategyId);
+            parameters.AddOptionalParameter("strategyType", strategyType);
+            parameters.AddOptionalParameter("selfTradePreventionMode", EnumConverter.GetString(selfTradePreventionMode));
             parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
             return await SendRequestInternal<T>(uri, HttpMethod.Post, ct, parameters, true, weight: weight).ConfigureAwait(false);
@@ -150,13 +157,8 @@ namespace Binance.Net.Clients.SpotApi
 
         internal async Task<BinanceTradeRuleResult> CheckTradeRules(string symbol, decimal? quantity, decimal? quoteQuantity, decimal? price, decimal? stopPrice, SpotOrderType? type, CancellationToken ct)
         {
-            var outputQuantity = quantity;
-            var outputQuoteQuantity = quoteQuantity;
-            var outputPrice = price;
-            var outputStopPrice = stopPrice;
-
             if (Options.SpotApiOptions.TradeRulesBehaviour == TradeRulesBehaviour.None)
-                return BinanceTradeRuleResult.CreatePassed(outputQuantity, outputQuoteQuantity, outputPrice, outputStopPrice);
+                return BinanceTradeRuleResult.CreatePassed(quantity, quoteQuantity, price, stopPrice);
 
             if (ExchangeInfo == null || LastExchangeInfoUpdate == null || (DateTime.UtcNow - LastExchangeInfoUpdate.Value).TotalMinutes > Options.SpotApiOptions.TradeRulesUpdateInterval.TotalMinutes)
                 await ExchangeData.GetExchangeInfoAsync(ct).ConfigureAwait(false);
@@ -164,43 +166,21 @@ namespace Binance.Net.Clients.SpotApi
             if (ExchangeInfo == null)
                 return BinanceTradeRuleResult.CreateFailed("Unable to retrieve trading rules, validation failed");
 
-            var symbolData = ExchangeInfo.Symbols.SingleOrDefault(s => string.Equals(s.Name, symbol, StringComparison.CurrentCultureIgnoreCase));
-            if (symbolData == null)
-                return BinanceTradeRuleResult.CreateFailed($"Trade rules check failed: Symbol {symbol} not found");
+            return BinanceHelpers.ValidateTradeRules(_log, Options.SpotApiOptions.TradeRulesBehaviour, ExchangeInfo, symbol, quantity, quoteQuantity, price, stopPrice, type);
+        }
 
-            if (type != null)
+        internal async Task<WebCallResult<T>> SendRequestInternal<T>(Uri uri, HttpMethod method, CancellationToken cancellationToken,
+            Dictionary<string, object>? parameters = null, bool signed = false, HttpMethodParameterPosition? postPosition = null,
+            ArrayParametersSerialization? arraySerialization = null, int weight = 1, bool ignoreRateLimit = false) where T : class
+        {
+            var result = await SendRequestAsync<T>(uri, method, cancellationToken, parameters, signed, postPosition, arraySerialization, weight, ignoreRatelimit: ignoreRateLimit).ConfigureAwait(false);
+            if (!result && result.Error!.Code == -1021 && Options.SpotApiOptions.AutoTimestamp)
             {
-                if (!symbolData.OrderTypes.Contains(type.Value))
-                {
-                    return BinanceTradeRuleResult.CreateFailed(
-                        $"Trade rules check failed: {type} order type not allowed for {symbol}");
-                }
+                _log.Write(LogLevel.Debug, "Received Invalid Timestamp error, triggering new time sync");
+                TimeSyncState.LastSyncTime = DateTime.MinValue;
             }
-
-            if (symbolData.LotSizeFilter != null || symbolData.MarketLotSizeFilter != null && type == SpotOrderType.Market)
-            {
-                var minQty = symbolData.LotSizeFilter?.MinQuantity;
-                var maxQty = symbolData.LotSizeFilter?.MaxQuantity;
-                var stepSize = symbolData.LotSizeFilter?.StepSize;
-                if (type == SpotOrderType.Market && symbolData.MarketLotSizeFilter != null)
-                {
-                    minQty = symbolData.MarketLotSizeFilter.MinQuantity;
-                    if (symbolData.MarketLotSizeFilter.MaxQuantity != 0)
-                        maxQty = symbolData.MarketLotSizeFilter.MaxQuantity;
-
-                    if (symbolData.MarketLotSizeFilter.StepSize != 0)
-                        stepSize = symbolData.MarketLotSizeFilter.StepSize;
-                }
-
-                if (minQty.HasValue && quantity.HasValue)
-                {
-                    outputQuantity = BinanceHelpers.ClampQuantity(minQty.Value, maxQty!.Value, stepSize!.Value, quantity.Value);
-                    if (outputQuantity != quantity.Value)
-                    {
-                        if (Options.SpotApiOptions.TradeRulesBehaviour == TradeRulesBehaviour.ThrowError)
-                        {
-                            return BinanceTradeRuleResult.CreateFailed($"Trade rules check failed: LotSize filter failed. Original quantity: {quantity}, Closest allowed: {outputQuantity}");
-                        }
+            return result;                    
+        }
 
                         _log.Write(LogLevel.Information, $"Quantity clamped from {quantity} to {outputQuantity} based on lot size filter");
                     }
@@ -314,17 +294,16 @@ namespace Binance.Net.Clients.SpotApi
 
         internal async Task<WebCallResult<T>> SendRequestInternal<T>(Uri uri, HttpMethod method, CancellationToken cancellationToken,
             Dictionary<string, object>? parameters = null, bool signed = false, HttpMethodParameterPosition? postPosition = null,
-            ArrayParametersSerialization? arraySerialization = null, int weight = 1, bool ignoreRateLimit = false) where T : class
+            ArrayParametersSerialization? arraySerialization = null, int weight = 1, bool ignoreRateLimit = false)
         {
-            var result = await SendRequestAsync<T>(uri, method, cancellationToken, parameters, signed, postPosition, arraySerialization, weight, ignoreRatelimit: ignoreRateLimit).ConfigureAwait(false);
+            var result = await SendRequestAsync(uri, method, cancellationToken, parameters, signed, postPosition, arraySerialization, weight, ignoreRatelimit: ignoreRateLimit).ConfigureAwait(false);
             if (!result && result.Error!.Code == -1021 && Options.SpotApiOptions.AutoTimestamp)
             {
                 _log.Write(LogLevel.Debug, "Received Invalid Timestamp error, triggering new time sync");
                 TimeSyncState.LastSyncTime = DateTime.MinValue;
             }
-            return result;                    
+            return result;
         }
-
         #endregion
 
         /// <inheritdoc />

@@ -35,6 +35,9 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         /// <param name="icebergQty">User for iceberg orders</param>
         /// <param name="orderResponseType">Used for the response JSON</param>
         /// <param name="trailingDelta">Trailing delta value for order in BIPS. A value of 1 means 0.01% trailing delta.</param>
+        /// <param name="strategyId">Strategy id</param>
+        /// <param name="strategyType">Strategy type</param>
+        /// <param name="selfTradePreventionMode">Self trade prevention mode</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Id's for the placed test order</returns>
@@ -50,6 +53,9 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
             decimal? icebergQty = null,
             OrderResponseType? orderResponseType = null,
             int? trailingDelta = null,
+            int? strategyId = null,
+            int? strategyType = null,
+            SelfTradePreventionMode? selfTradePreventionMode = null,
             int? receiveWindow = null,
             CancellationToken ct = default);
 
@@ -69,6 +75,9 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         /// <param name="icebergQty">Used for iceberg orders</param>
         /// <param name="orderResponseType">Used for the response JSON</param>
         /// <param name="trailingDelta">Trailing delta value for order in BIPS. A value of 1 means 0.01% trailing delta.</param>
+        /// <param name="strategyId">Strategy id</param>
+        /// <param name="strategyType">Strategy type</param>
+        /// <param name="selfTradePreventionMode">Self trade prevention mode</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Id's for the placed order</returns>
@@ -84,6 +93,9 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
             decimal? icebergQty = null,
             OrderResponseType? orderResponseType = null,
             int? trailingDelta = null,
+            int? strategyId = null,
+            int? strategyType = null,
+            SelfTradePreventionMode? selfTradePreventionMode = null,
             int? receiveWindow = null,
             CancellationToken ct = default);
 
@@ -208,6 +220,11 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         /// <param name="limitIcebergQuantity">Iceberg quantity for the limit order</param>
         /// <param name="stopIcebergQuantity">Iceberg quantity for the stop order</param>
         /// <param name="trailingDelta">Trailing delta value for order in BIPS. A value of 1 means 0.01% trailing delta.</param>
+        /// <param name="limitStrategyId">Strategy id of the limit order</param>
+        /// <param name="limitStrategyType">Strategy type of the limit order</param>
+        /// <param name="stopStrategyId">Strategy id of the stop order</param>
+        /// <param name="stopStrategyType">Strategy type of the stop order</param>
+        /// <param name="selfTradePreventionMode">Self trade prevention mode</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Order list info</returns>
@@ -224,6 +241,11 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
             decimal? stopIcebergQuantity = null,
             TimeInForce? stopLimitTimeInForce = null,
             int? trailingDelta = null,
+            int? limitStrategyId = null,
+            int? limitStrategyType = null,
+            int? stopStrategyId = null,
+            int? stopStrategyType = null,
+            SelfTradePreventionMode? selfTradePreventionMode = null,
             int? receiveWindow = null,
             CancellationToken ct = default);
 
@@ -274,7 +296,7 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         Task<WebCallResult<IEnumerable<BinanceOrderOcoList>>> GetOpenOcoOrdersAsync(long? receiveWindow = null, CancellationToken ct = default);
 
         /// <summary>
-        /// Gets all user trades for provided symbol
+        /// Gets user trades for provided symbol
         /// <para><a href="https://binance-docs.github.io/apidocs/spot/en/#account-trade-list-user_data" /></para>
         /// </summary>
         /// <param name="symbol">Symbol to get trades for</param>
@@ -784,5 +806,19 @@ namespace Binance.Net.Interfaces.Clients.SpotApi
         /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         Task<WebCallResult<BinanceQueryRecords<BinanceConvertTransferRecord>>> GetConvertTransferHistoryAsync(DateTime startTime, DateTime endTime, long? transferId = null, string? asset = null, int? page = null, int? limit = null, long? receiveWindow = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Get prevented matches because of self trade prevention
+        /// <para><a href="https://binance-docs.github.io/apidocs/spot/en/#query-prevented-matches-user_data" /></para>
+        /// </summary>
+        /// <param name="symbol">Symbol</param>
+        /// <param name="preventedMatchId">Filter by prevented match id</param>
+        /// <param name="orderId">Filter by order id</param>
+        /// <param name="fromPreventedMatchId">Filter by min prevented match id</param>
+        /// <param name="limit">Max results</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        Task<WebCallResult<IEnumerable<BinancePreventedTrade>>> GetPreventedTradesAsync(string symbol, long? preventedMatchId = null, long? orderId = null, long? fromPreventedMatchId = null, int? limit = null, long? receiveWindow = null, CancellationToken ct = default);
     }
 }

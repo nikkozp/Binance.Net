@@ -108,6 +108,12 @@ namespace Binance.Net.Converters
                         MinTrailingBelowDelta = (int)obj["minTrailingBelowDelta"],
                     };
                     break;
+                case SymbolFilterType.IcebergOrders:
+                    result = new BinanceMaxNumberOfIcebergOrdersFilter
+                    {
+                        MaxNumIcebergOrders = obj.ContainsKey("maxNumIcebergOrders") ? (int)obj["maxNumIcebergOrders"] : 0
+                    };
+                    break;
                 default:
                     Trace.WriteLine($"{DateTime.Now:yyyy/MM/dd HH:mm:ss:fff} | Warning | Can't parse symbol filter of type: " + obj["filterType"]);
                     result = new BinanceSymbolFilter();
@@ -207,6 +213,11 @@ namespace Binance.Net.Converters
                     writer.WriteValue(TrailingDelta.MinTrailingAboveDelta);
                     writer.WritePropertyName("minTrailingBelowDelta");
                     writer.WriteValue(TrailingDelta.MinTrailingBelowDelta);
+                    break;
+                case SymbolFilterType.IcebergOrders:
+                    var MaxNumIcebergOrders = (BinanceMaxNumberOfIcebergOrdersFilter)filter;
+                    writer.WritePropertyName("maxNumIcebergOrders");
+                    writer.WriteValue(MaxNumIcebergOrders.MaxNumIcebergOrders);                   
                     break;
                 case SymbolFilterType.PercentagePriceBySide:
                     var PercentagePriceBySide = (BinanceSymbolPercentPriceBySideFilter)filter;

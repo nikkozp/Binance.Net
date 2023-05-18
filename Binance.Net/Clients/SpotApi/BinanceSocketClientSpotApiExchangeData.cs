@@ -10,7 +10,6 @@ using Binance.Net.Enums;
 using Binance.Net.Interfaces;
 using Binance.Net.Interfaces.Clients.SpotApi;
 using Binance.Net.Objects;
-using Binance.Net.Objects.Internal;
 using Binance.Net.Objects.Models;
 using Binance.Net.Objects.Models.Spot;
 using Binance.Net.Objects.Models.Spot.Blvt;
@@ -18,85 +17,227 @@ using Binance.Net.Objects.Models.Spot.Socket;
 using CryptoExchange.Net;
 using CryptoExchange.Net.Authentication;
 using CryptoExchange.Net.CommonObjects;
+using CryptoExchange.Net.Converters;
 using CryptoExchange.Net.Logging;
 using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Binance.Net.Clients.SpotApi
 {
     /// <inheritdoc />
-    public class BinanceSocketClientSpotStreams : SocketApiClient, IBinanceSocketClientSpotStreams
+    public class BinanceSocketClientSpotApiExchangeData : IBinanceSocketClientSpotApiExchangeData
     {
-        #region fields
-        private readonly BinanceSocketClientOptions _options;
+        private readonly Log _log;
+        private readonly BinanceSocketClientSpotApi _client;
 
-        private const string depthStreamEndpoint = "@depth";
-        private const string bookTickerStreamEndpoint = "@bookTicker";
-        private const string allBookTickerStreamEndpoint = "!bookTicker";
-        private const string klineStreamEndpoint = "@kline";
-        private const string tradesStreamEndpoint = "@trade";
-        private const string aggregatedTradesStreamEndpoint = "@aggTrade";
-        private const string symbolTickerStreamEndpoint = "@ticker";
-        private const string allSymbolTickerStreamEndpoint = "!ticker@arr";
-        private const string partialBookDepthStreamEndpoint = "@depth";
-        private const string symbolMiniTickerStreamEndpoint = "@miniTicker";
-        private const string allSymbolMiniTickerStreamEndpoint = "!miniTicker@arr";
-
-        private const string bltvInfoEndpoint = "@tokenNav";
-        private const string bltvKlineEndpoint = "@nav_kline";
-
-        private const string executionUpdateEvent = "executionReport";
-        private const string ocoOrderUpdateEvent = "listStatus";
-        private const string accountPositionUpdateEvent = "outboundAccountPosition";
-        private const string balanceUpdateEvent = "balanceUpdate";
-        #endregion
+        private const string _baseAddressWebsocketApi = "wss://ws-api.binance.com:443/ws-api/v3";
 
         #region constructor/destructor
 
-        /// <summary>
-        /// Create a new instance of BinanceSocketClientSpot with default options
-        /// </summary>
-        public BinanceSocketClientSpotStreams(Log log, BinanceSocketClientOptions options) :
-            base(log, options, options.SpotStreamsOptions)
+        internal BinanceSocketClientSpotApiExchangeData(Log log, BinanceSocketClientSpotApi client)
         {
-            _options = options;
-
-            SetDataInterpreter((data) => string.Empty, null);
-            RateLimitPerSocketPerSecond = 4;
-        }
-        #endregion
-
-        /// <inheritdoc />
-        protected override AuthenticationProvider CreateAuthenticationProvider(ApiCredentials credentials)
-            => new BinanceAuthenticationProvider((BinanceApiCredentials)credentials);
-
-        #region methods
-
-        #region Aggregate Trade Streams
-
-        /// <inheritdoc />
-        public async Task<CallResult<UpdateSubscription>> SubscribeToAggregatedTradeUpdatesAsync(string symbol,
-            Action<DataEvent<BinanceStreamAggregatedTrade>> onMessage, CancellationToken ct = default) =>
-            await SubscribeToAggregatedTradeUpdatesAsync(new[] { symbol }, onMessage, ct).ConfigureAwait(false);
-
-        /// <inheritdoc />
-        public async Task<CallResult<UpdateSubscription>> SubscribeToAggregatedTradeUpdatesAsync(
-            IEnumerable<string> symbols, Action<DataEvent<BinanceStreamAggregatedTrade>> onMessage, CancellationToken ct = default)
-        {
-            symbols.ValidateNotNull(nameof(symbols));
-            foreach (var symbol in symbols)
-                symbol.ValidateBinanceSymbol();
-
-            var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamAggregatedTrade>>>(data => onMessage(data.As(data.Data.Data, data.Data.Data.Symbol)));
-            symbols = symbols.Select(a => a.ToLower(CultureInfo.InvariantCulture) + aggregatedTradesStreamEndpoint)
-                .ToArray();
-            return await SubscribeAsync(BaseAddress, symbols, handler, ct).ConfigureAwait(false);
+            _client = client;
+            _log = log;
         }
 
         #endregion
+
+        #region Queries
+
+        #region Ping
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<object>>> PingAsync()
+        {
+            return await _client.QueryAsync<object>(_baseAddressWebsocketApi, $"ping", new Dictionary<string, object>()).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Get Server Time
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<DateTime>>> GetServerTimeAsync()
+        {
+            var result = await _client.QueryAsync<BinanceCheckTime>(_baseAddressWebsocketApi, $"time", new Dictionary<string, object>()).ConfigureAwait(false);
+            if (!result)
+                return result.AsError<BinanceResponse<DateTime>>(result.Error!);
+
+            return result.As(new BinanceResponse<DateTime>
+            {
+                Ratelimits = result.Data!.Ratelimits!,
+                Result = result.Data!.Result!.ServerTime!
+            });
+        }
+
+        #endregion
+
+        #region Get Exchange Info
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<BinanceExchangeInfo>>> GetExchangeInfoAsync(IEnumerable<string>? symbols = null)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("symbols", symbols);
+            var result = await _client.QueryAsync<BinanceExchangeInfo>(_baseAddressWebsocketApi, $"exchangeInfo", parameters).ConfigureAwait(false);
+            if (!result)
+                return result;
+
+            _client.ExchangeInfo = result.Data.Result;
+            _client.LastExchangeInfoUpdate = DateTime.UtcNow;
+            _log.Write(LogLevel.Information, "Trade rules updated");
+            return result;
+        }
+
+        #endregion
+
+        #region Get Orderbook
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<BinanceOrderBook>>> GetOrderBookAsync(string symbol, int? limit = null)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddParameter("symbol", symbol);
+            parameters.AddOptionalParameter("limit", limit);
+            return await _client.QueryAsync<BinanceOrderBook>(_baseAddressWebsocketApi, $"depth", parameters).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Get Recent Trades
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<IEnumerable<BinanceRecentTradeQuote>>>> GetRecentTradesAsync(string symbol, int? limit = null)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddParameter("symbol", symbol);
+            parameters.AddOptionalParameter("limit", limit);
+            return await _client.QueryAsync<IEnumerable<BinanceRecentTradeQuote>>(_baseAddressWebsocketApi, $"trades.recent", parameters).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Get Trade History
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<IEnumerable<BinanceRecentTradeQuote>>>> GetTradeHistoryAsync(string symbol, long? fromId = null, int? limit = null)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddParameter("symbol", symbol);
+            parameters.AddOptionalParameter("limit", limit);
+            parameters.AddOptionalParameter("fromId", fromId);
+            return await _client.QueryAsync<IEnumerable<BinanceRecentTradeQuote>>(_baseAddressWebsocketApi, $"trades.historical", parameters, true).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Get Aggregated Trades
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<IEnumerable<BinanceStreamAggregatedTrade>>>> GetAggregatedTradeHistoryAsync(string symbol, long? fromId = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddParameter("symbol", symbol);
+            parameters.AddOptionalParameter("limit", limit);
+            parameters.AddOptionalParameter("startTime", DateTimeConverter.ConvertToMilliseconds(startTime));
+            parameters.AddOptionalParameter("endTime", DateTimeConverter.ConvertToMilliseconds(endTime));
+            parameters.AddOptionalParameter("fromId", fromId);
+            return await _client.QueryAsync<IEnumerable<BinanceStreamAggregatedTrade>>(_baseAddressWebsocketApi, $"trades.aggregate", parameters, false).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Get Klines
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<IEnumerable<BinanceSpotKline>>>> GetKlinesAsync(string symbol, KlineInterval interval, DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddParameter("symbol", symbol);
+            parameters.AddParameter("interval", EnumConverter.GetString(interval));
+            parameters.AddOptionalParameter("limit", limit);
+            parameters.AddOptionalParameter("startTime", DateTimeConverter.ConvertToMilliseconds(startTime));
+            parameters.AddOptionalParameter("endTime", DateTimeConverter.ConvertToMilliseconds(endTime));
+            return await _client.QueryAsync<IEnumerable<BinanceSpotKline>>(_baseAddressWebsocketApi, $"klines", parameters, false).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Get UI Klines
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<IEnumerable<BinanceSpotKline>>>> GetUIKlinesAsync(string symbol, KlineInterval interval, DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddParameter("symbol", symbol);
+            parameters.AddParameter("interval", EnumConverter.GetString(interval));
+            parameters.AddOptionalParameter("limit", limit);
+            parameters.AddOptionalParameter("startTime", DateTimeConverter.ConvertToMilliseconds(startTime));
+            parameters.AddOptionalParameter("endTime", DateTimeConverter.ConvertToMilliseconds(endTime));
+            return await _client.QueryAsync<IEnumerable<BinanceSpotKline>>(_baseAddressWebsocketApi, $"uiKlines", parameters, false).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Get Average Price
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<BinanceAveragePrice>>> GetCurrentAvgPriceAsync(string symbol)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddParameter("symbol", symbol);
+            return await _client.QueryAsync<BinanceAveragePrice>(_baseAddressWebsocketApi, $"avgPrice", parameters, false).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Get Tickers
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<IEnumerable<Binance24HPrice>>>> GetTickersAsync(IEnumerable<string>? symbols = null)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("symbols", symbols);
+            return await _client.QueryAsync<IEnumerable<Binance24HPrice>>(_baseAddressWebsocketApi, $"ticker.24hr", parameters, false).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Get Rolling Window Tickers
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<IEnumerable<BinanceRollingWindowTick>>>> GetRollingWindowTickersAsync(IEnumerable<string> symbols)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("symbols", symbols);
+            return await _client.QueryAsync<IEnumerable<BinanceRollingWindowTick>>(_baseAddressWebsocketApi, $"ticker", parameters, false).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Get Book Tickers
+
+        /// <inheritdoc />
+        public async Task<CallResult<BinanceResponse<IEnumerable<BinanceBookPrice>>>> GetBookTickersAsync(IEnumerable<string>? symbols = null)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("symbols", symbols);
+            return await _client.QueryAsync<IEnumerable<BinanceBookPrice>>(_baseAddressWebsocketApi, $"ticker.book", parameters, false).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Streams
 
         #region Trade Streams
 
@@ -114,8 +255,31 @@ namespace Binance.Net.Clients.SpotApi
                 symbol.ValidateBinanceSymbol();
 
             var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamTrade>>>(data => onMessage(data.As(data.Data.Data, data.Data.Data.Symbol)));
-            symbols = symbols.Select(a => a.ToLower(CultureInfo.InvariantCulture) + tradesStreamEndpoint).ToArray();
-            return await SubscribeAsync(BaseAddress, symbols, handler, ct).ConfigureAwait(false);
+            symbols = symbols.Select(a => a.ToLower(CultureInfo.InvariantCulture) + "@trade").ToArray();
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, symbols, handler, ct).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Aggregate Trade Streams
+
+        /// <inheritdoc />
+        public async Task<CallResult<UpdateSubscription>> SubscribeToAggregatedTradeUpdatesAsync(string symbol,
+            Action<DataEvent<BinanceStreamAggregatedTrade>> onMessage, CancellationToken ct = default) =>
+            await SubscribeToAggregatedTradeUpdatesAsync(new[] { symbol }, onMessage, ct).ConfigureAwait(false);
+
+        /// <inheritdoc />
+        public async Task<CallResult<UpdateSubscription>> SubscribeToAggregatedTradeUpdatesAsync(
+            IEnumerable<string> symbols, Action<DataEvent<BinanceStreamAggregatedTrade>> onMessage, CancellationToken ct = default)
+        {
+            symbols.ValidateNotNull(nameof(symbols));
+            foreach (var symbol in symbols)
+                symbol.ValidateBinanceSymbol();
+
+            var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamAggregatedTrade>>>(data => onMessage(data.As(data.Data.Data, data.Data.Data.Symbol)));
+            symbols = symbols.Select(a => a.ToLower(CultureInfo.InvariantCulture) + "@aggTrade")
+                .ToArray();
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, symbols, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
@@ -186,10 +350,10 @@ namespace Binance.Net.Clients.SpotApi
                 symbol.ValidateBinanceSymbol();
 
             var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamMiniTick>>>(data => onMessage(data.As<IBinanceMiniTick>(data.Data.Data, data.Data.Data.Symbol)));
-            symbols = symbols.Select(a => a.ToLower(CultureInfo.InvariantCulture) + symbolMiniTickerStreamEndpoint)
+            symbols = symbols.Select(a => a.ToLower(CultureInfo.InvariantCulture) + "@miniTicker")
                 .ToArray();
 
-            return await SubscribeAsync(BaseAddress, symbols, handler, ct).ConfigureAwait(false);
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, symbols, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
@@ -201,7 +365,7 @@ namespace Binance.Net.Clients.SpotApi
             Action<DataEvent<IEnumerable<IBinanceMiniTick>>> onMessage, CancellationToken ct = default)
         {
             var handler = new Action<DataEvent<BinanceCombinedStream<IEnumerable<BinanceStreamMiniTick>>>>(data => onMessage(data.As<IEnumerable<IBinanceMiniTick>>(data.Data.Data, data.Data.Stream)));
-            return await SubscribeAsync(BaseAddress, new[] { allSymbolMiniTickerStreamEndpoint }, handler, ct).ConfigureAwait(false);
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, new[] { "!miniTicker@arr" }, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
@@ -213,8 +377,8 @@ namespace Binance.Net.Clients.SpotApi
             Action<DataEvent<BinanceStreamRollingWindowTick>> onMessage, CancellationToken ct = default)
         {
             var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamRollingWindowTick>>>(data => onMessage(data.As(data.Data.Data, data.Data.Stream)));
-            var windowString = windowSize < TimeSpan.FromDays(1) ? windowSize.TotalHours + "h" : windowSize.TotalDays + "d"; 
-            return await SubscribeAsync(BaseAddress, new[] { $"{symbol.ToLowerInvariant()}@ticker_{windowString}" }, handler, ct).ConfigureAwait(false);
+            var windowString = windowSize < TimeSpan.FromDays(1) ? windowSize.TotalHours + "h" : windowSize.TotalDays + "d";
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, new[] { $"{symbol.ToLowerInvariant()}@ticker_{windowString}" }, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
@@ -226,8 +390,8 @@ namespace Binance.Net.Clients.SpotApi
             Action<DataEvent<IEnumerable<BinanceStreamRollingWindowTick>>> onMessage, CancellationToken ct = default)
         {
             var handler = new Action<DataEvent<BinanceCombinedStream<IEnumerable<BinanceStreamRollingWindowTick>>>>(data => onMessage(data.As(data.Data.Data, data.Data.Stream)));
-            var windowString = windowSize < TimeSpan.FromDays(1) ? windowSize.TotalHours + "h" : windowSize.TotalDays + "d"; 
-            return await SubscribeAsync(BaseAddress, new[] { $"!ticker_{windowString}@arr" }, handler, ct).ConfigureAwait(false);
+            var windowString = windowSize < TimeSpan.FromDays(1) ? windowSize.TotalHours + "h" : windowSize.TotalDays + "d";
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, new[] { $"!ticker_{windowString}@arr" }, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
@@ -248,8 +412,8 @@ namespace Binance.Net.Clients.SpotApi
                 symbol.ValidateBinanceSymbol();
 
             var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamBookPrice>>>(data => onMessage(data.As(data.Data.Data, data.Data.Data.Symbol)));
-            symbols = symbols.Select(a => a.ToLower(CultureInfo.InvariantCulture) + bookTickerStreamEndpoint).ToArray();
-            return await SubscribeAsync(BaseAddress, symbols, handler, ct).ConfigureAwait(false);
+            symbols = symbols.Select(a => a.ToLower(CultureInfo.InvariantCulture) + "@bookTicker").ToArray();
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, symbols, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
@@ -280,9 +444,9 @@ namespace Binance.Net.Clients.SpotApi
             });
 
             symbols = symbols.Select(a =>
-                a.ToLower(CultureInfo.InvariantCulture) + partialBookDepthStreamEndpoint + levels +
+                a.ToLower(CultureInfo.InvariantCulture) + "@depth" + levels +
                 (updateInterval.HasValue ? $"@{updateInterval.Value}ms" : "")).ToArray();
-            return await SubscribeAsync(BaseAddress, symbols, handler, ct).ConfigureAwait(false);
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, symbols, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
@@ -305,9 +469,9 @@ namespace Binance.Net.Clients.SpotApi
             updateInterval?.ValidateIntValues(nameof(updateInterval), 100, 1000);
             var handler = new Action<DataEvent<BinanceCombinedStream<BinanceEventOrderBook>>>(data => onMessage(data.As<IBinanceEventOrderBook>(data.Data.Data, data.Data.Data.Symbol)));
             symbols = symbols.Select(a =>
-                a.ToLower(CultureInfo.InvariantCulture) + depthStreamEndpoint +
+                a.ToLower(CultureInfo.InvariantCulture) + "@depth" +
                 (updateInterval.HasValue ? $"@{updateInterval.Value}ms" : "")).ToArray();
-            return await SubscribeAsync(BaseAddress, symbols, handler, ct).ConfigureAwait(false);
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, symbols, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
@@ -323,8 +487,8 @@ namespace Binance.Net.Clients.SpotApi
             symbols.ValidateNotNull(nameof(symbols));
 
             var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamTick>>>(data => onMessage(data.As<IBinanceTick>(data.Data.Data, data.Data.Data.Symbol)));
-            symbols = symbols.Select(a => a.ToLower(CultureInfo.InvariantCulture) + symbolTickerStreamEndpoint).ToArray();
-            return await SubscribeAsync(BaseAddress, symbols, handler, ct).ConfigureAwait(false);
+            symbols = symbols.Select(a => a.ToLower(CultureInfo.InvariantCulture) + "@ticker").ToArray();
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, symbols, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
@@ -424,8 +588,6 @@ namespace Binance.Net.Clients.SpotApi
                 }
             });
 
-            return await SubscribeAsync(BaseAddress, new[] { listenKey }, handler, ct).ConfigureAwait(false);
-        }
         #endregion
 
         #region Blvt info update
@@ -437,12 +599,12 @@ namespace Binance.Net.Clients.SpotApi
         /// <inheritdoc />
         public async Task<CallResult<UpdateSubscription>> SubscribeToBlvtInfoUpdatesAsync(IEnumerable<string> tokens, Action<DataEvent<BinanceBlvtInfoUpdate>> onMessage, CancellationToken ct = default)
         {
-            if (_options.BlvtStreamAddress == null)
+            if (_client.ClientOptions.BlvtStreamAddress == null)
                 throw new Exception("No url found for Blvt stream, check the `BlvtStreamAddress` client option");
 
-            tokens = tokens.Select(a => a.ToUpper(CultureInfo.InvariantCulture) + bltvInfoEndpoint).ToArray();
+            tokens = tokens.Select(a => a.ToUpper(CultureInfo.InvariantCulture) + "@tokenNav").ToArray();
             var handler = new Action<DataEvent<BinanceCombinedStream<BinanceBlvtInfoUpdate>>>(data => onMessage(data.As(data.Data.Data, data.Data.Data.TokenName)));
-            return await SubscribeAsync(_options.BlvtStreamAddress, tokens, handler, ct).ConfigureAwait(false);
+            return await _client.SubscribeAsync(_client.ClientOptions.BlvtStreamAddress, tokens, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
@@ -456,128 +618,19 @@ namespace Binance.Net.Clients.SpotApi
         /// <inheritdoc />
         public async Task<CallResult<UpdateSubscription>> SubscribeToBlvtKlineUpdatesAsync(IEnumerable<string> tokens, KlineInterval interval, Action<DataEvent<BinanceStreamKlineData>> onMessage, CancellationToken ct = default)
         {
-            if (_options.BlvtStreamAddress == null)
+            if (_client.ClientOptions.BlvtStreamAddress == null)
                 throw new Exception("No url found for Blvt stream, check the `BlvtStreamAddress` client option");
 
-            tokens = tokens.Select(a => a.ToUpper(CultureInfo.InvariantCulture) + bltvKlineEndpoint + "_" + JsonConvert.SerializeObject(interval, new KlineIntervalConverter(false))).ToArray();
+            tokens = tokens.Select(a => a.ToUpper(CultureInfo.InvariantCulture) + "@nav_kline" + "_" + JsonConvert.SerializeObject(interval, new KlineIntervalConverter(false))).ToArray();
             var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamKlineData>>>(data => onMessage(data.As(data.Data.Data, data.Data.Data.Symbol)));
-            return await SubscribeAsync(_options.BlvtStreamAddress, tokens, handler, ct).ConfigureAwait(false);
+            return await _client.SubscribeAsync(_client.ClientOptions.BlvtStreamAddress, tokens, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
 
         #endregion
 
-        internal Task<CallResult<UpdateSubscription>> SubscribeAsync<T>(string url, IEnumerable<string> topics, Action<DataEvent<T>> onData, CancellationToken ct)
-        {
-            var request = new BinanceSocketRequest
-            {
-                Method = "SUBSCRIBE",
-                Params = topics.ToArray(),
-                Id = NextId()
-            };
+        #endregion
 
-            return SubscribeAsync(url.AppendPath("stream"), request, null, false, onData, ct);
-        }
-
-        /// <inheritdoc />
-        protected override bool HandleQueryResponse<T>(SocketConnection s, object request, JToken data, out CallResult<T> callResult)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritdoc />
-        protected override bool HandleSubscriptionResponse(SocketConnection s, SocketSubscription subscription, object request, JToken message, out CallResult<object>? callResult)
-        {
-            callResult = null;
-            if (message.Type != JTokenType.Object)
-                return false;
-
-            var id = message["id"];
-            if (id == null)
-                return false;
-
-            var bRequest = (BinanceSocketRequest)request;
-            if ((int)id != bRequest.Id)
-                return false;
-
-            var result = message["result"];
-            if (result != null && result.Type == JTokenType.Null)
-            {
-                _log.Write(LogLevel.Trace, $"Socket {s.SocketId} Subscription completed");
-                callResult = new CallResult<object>(new object());
-                return true;
-            }
-
-            var error = message["error"];
-            if (error == null)
-            {
-                callResult = new CallResult<object>(new ServerError("Unknown error: " + message));
-                return true;
-            }
-
-            callResult = new CallResult<object>(new ServerError(error["code"]!.Value<int>(), error["msg"]!.ToString()));
-            return true;
-        }
-
-        /// <inheritdoc />
-        protected override bool MessageMatchesHandler(SocketConnection socketConnection, JToken message, object request)
-        {
-            if (message.Type != JTokenType.Object)
-                return false;
-
-            var bRequest = (BinanceSocketRequest)request;
-            var stream = message["stream"];
-            if (stream == null)
-                return false;
-
-            return bRequest.Params.Contains(stream.ToString());
-        }
-
-        /// <inheritdoc />
-        protected override bool MessageMatchesHandler(SocketConnection socketConnection, JToken message, string identifier)
-        {
-            return true;
-        }
-
-        /// <inheritdoc />
-        protected override Task<CallResult<bool>> AuthenticateSocketAsync(SocketConnection s)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritdoc />
-        protected override async Task<bool> UnsubscribeAsync(SocketConnection connection, SocketSubscription subscription)
-        {
-            var topics = ((BinanceSocketRequest)subscription.Request!).Params;
-            var unsub = new BinanceSocketRequest { Method = "UNSUBSCRIBE", Params = topics, Id = NextId() };
-            var result = false;
-
-            if (!connection.Connected)
-                return true;
-
-            await connection.SendAndWaitAsync(unsub, Options.SocketResponseTimeout, null, data =>
-            {
-                if (data.Type != JTokenType.Object)
-                    return false;
-
-                var id = data["id"];
-                if (id == null)
-                    return false;
-
-                if ((int)id != unsub.Id)
-                    return false;
-
-                var result = data["result"];
-                if (result?.Type == JTokenType.Null)
-                {
-                    result = true;
-                    return true;
-                }
-
-                return true;
-            }).ConfigureAwait(false);
-            return result;
-        }
     }
 }
