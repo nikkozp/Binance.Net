@@ -120,11 +120,11 @@ namespace Binance.Net.Objects.Models.Spot
         /// </summary>
         [JsonIgnore]
         public BinanceSymbolMaxAlgorithmicOrdersFilter? MaxAlgorithmicOrdersFilter => Filters.OfType<BinanceSymbolMaxAlgorithmicOrdersFilter>().FirstOrDefault();
-        /// <summary>
-        /// Filter for the minimal quote quantity of an order for this symbol
-        /// </summary>
-        [JsonIgnore]
-        public BinanceSymbolMinNotionalFilter? MinNotionalFilter => Filters.OfType<BinanceSymbolMinNotionalFilter>().FirstOrDefault();
+        ///// <summary>
+        ///// Filter for the minimal quote quantity of an order for this symbol
+        ///// </summary>
+        //[JsonIgnore]
+        //public BinanceSymbolMinNotionalFilter? MinNotionalFilter => Filters.OfType<BinanceSymbolMinNotionalFilter>().FirstOrDefault();
         /// <summary>
         /// Filter for the minimal quote quantity of an order for this symbol
         /// </summary>

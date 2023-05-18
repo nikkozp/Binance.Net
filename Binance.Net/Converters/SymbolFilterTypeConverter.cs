@@ -13,7 +13,6 @@ namespace Binance.Net.Converters
         {
             new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.LotSize, "LOT_SIZE"),
             new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.MarketLotSize, "MARKET_LOT_SIZE"),
-            new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.MinNotional, "MIN_NOTIONAL"),
             new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.Price, "PRICE_FILTER"),
             new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.PricePercent, "PERCENT_PRICE"),
             new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.IcebergParts, "ICEBERG_PARTS"),
@@ -22,7 +21,8 @@ namespace Binance.Net.Converters
             new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.MaxPosition, "MAX_POSITION"),
             new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.PercentagePriceBySide, "PERCENT_PRICE_BY_SIDE"),
             new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.TrailingDelta, "TRAILING_DELTA"),
-            new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.TrailingDelta, "NOTIONAL"),
+            new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.Notional, "NOTIONAL"),
+            new KeyValuePair<SymbolFilterType, string>(SymbolFilterType.MinNotional, "MIN_NOTIONAL"),
         };
     }
 }

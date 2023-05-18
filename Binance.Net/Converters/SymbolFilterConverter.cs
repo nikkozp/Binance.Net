@@ -38,14 +38,6 @@ namespace Binance.Net.Converters
                         StepSize = (decimal)obj["stepSize"]
                     };
                     break;
-                case SymbolFilterType.MinNotional:
-                    result = new BinanceSymbolMinNotionalFilter
-                    {
-                        MinNotional = (decimal)obj["minNotional"],
-                        ApplyToMarketOrders = (bool)obj["applyToMarket"],
-                        AveragePriceMinutes = (int)obj["avgPriceMins"]
-                    };
-                    break;
                 case SymbolFilterType.Notional:
                     result = new BinanceSymbolNotionalFilter
                     {
@@ -154,14 +146,18 @@ namespace Binance.Net.Converters
                     writer.WritePropertyName("stepSize");
                     writer.WriteValue(marketLotSizeFilter.StepSize);
                     break;
-                case SymbolFilterType.MinNotional:
-                    var minNotionalFilter = (BinanceSymbolMinNotionalFilter)filter;
+                case SymbolFilterType.Notional:
+                    var notionalFilter = (BinanceSymbolNotionalFilter)filter;
                     writer.WritePropertyName("minNotional");
-                    writer.WriteValue(minNotionalFilter.MinNotional);
-                    writer.WritePropertyName("applyToMarket");
-                    writer.WriteValue(minNotionalFilter.ApplyToMarketOrders);
+                    writer.WriteValue(notionalFilter.MinNotional);
+                    writer.WritePropertyName("maxNotional");
+                    writer.WriteValue(notionalFilter.MaxNotional);
+                    writer.WritePropertyName("applyMinToMarket");
+                    writer.WriteValue(notionalFilter.ApplyMinToMarketOrders);
+                    writer.WritePropertyName("applyMaxToMarket");
+                    writer.WriteValue(notionalFilter.ApplyMaxToMarketOrders);
                     writer.WritePropertyName("avgPriceMins");
-                    writer.WriteValue(minNotionalFilter.AveragePriceMinutes);
+                    writer.WriteValue(notionalFilter.AveragePriceMinutes);
                     break;
                 case SymbolFilterType.Price:
                     var priceFilter = (BinanceSymbolPriceFilter)filter;
@@ -211,6 +207,19 @@ namespace Binance.Net.Converters
                     writer.WriteValue(TrailingDelta.MinTrailingAboveDelta);
                     writer.WritePropertyName("minTrailingBelowDelta");
                     writer.WriteValue(TrailingDelta.MinTrailingBelowDelta);
+                    break;
+                case SymbolFilterType.PercentagePriceBySide:
+                    var PercentagePriceBySide = (BinanceSymbolPercentPriceBySideFilter)filter;
+                    writer.WritePropertyName("askMultiplierUp");
+                    writer.WriteValue(PercentagePriceBySide.AskMultiplierUp);
+                    writer.WritePropertyName("askMultiplierDown");
+                    writer.WriteValue(PercentagePriceBySide.AskMultiplierDown);
+                    writer.WritePropertyName("bidMultiplierUp");
+                    writer.WriteValue(PercentagePriceBySide.BidMultiplierUp);
+                    writer.WritePropertyName("bidMultiplierDown");
+                    writer.WriteValue(PercentagePriceBySide.BidMultiplierDown);
+                    writer.WritePropertyName("avgPriceMins");
+                    writer.WriteValue(PercentagePriceBySide.AveragePriceMinutes);
                     break;
                 default:
                     Trace.WriteLine($"{DateTime.Now:yyyy/MM/dd HH:mm:ss:fff} | Warning | Can't write symbol filter of type: " + filter.FilterType);

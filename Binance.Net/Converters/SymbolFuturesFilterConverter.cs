@@ -69,7 +69,7 @@ namespace Binance.Net.Converters
                 case SymbolFilterType.MinNotional:
                     result = new BinanceSymbolMinNotionalFilter
                     {
-                        MinNotional = obj.ContainsKey("notional") ? (decimal)obj["notional"] : 0
+                        MinNotional = (decimal)obj["notional"]
                     };
                     break;
                 default:

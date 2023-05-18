@@ -16492,11 +16492,6 @@
             Filter for max algorithmic orders for this symbol
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Spot.BinanceSymbol.MinNotionalFilter">
-            <summary>
-            Filter for the minimal quote quantity of an order for this symbol
-            </summary>
-        </member>
         <member name="P:Binance.Net.Objects.Models.Spot.BinanceSymbol.NotionalFilter">
             <summary>
             Filter for the minimal quote quantity of an order for this symbol

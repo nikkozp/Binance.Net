@@ -207,17 +207,17 @@ namespace Binance.Net.Clients.SpotApi
                 }
             }
 
-            if(symbolData.MinNotionalFilter != null && outputQuoteQuantity != null)
+            if(symbolData.NotionalFilter != null && outputQuoteQuantity != null)
             {
-                if (quoteQuantity < symbolData.MinNotionalFilter.MinNotional)
+                if (quoteQuantity < symbolData.NotionalFilter.MinNotional)
                 {
                     if (Options.SpotApiOptions.TradeRulesBehaviour == TradeRulesBehaviour.ThrowError)
                     {
                         return BinanceTradeRuleResult.CreateFailed(
-                            $"Trade rules check failed: MinNotional filter failed. Order value: {quoteQuantity}, minimal order value: {symbolData.MinNotionalFilter.MinNotional}");
+                            $"Trade rules check failed: MinNotional filter failed. Order value: {quoteQuantity}, minimal order value: {symbolData.NotionalFilter.MinNotional}");
                     }
 
-                    outputQuoteQuantity = symbolData.MinNotionalFilter.MinNotional;
+                    outputQuoteQuantity = symbolData.NotionalFilter.MinNotional;
                     _log.Write(LogLevel.Information, $"QuoteQuantity adjusted from {quoteQuantity} to {outputQuoteQuantity} based on min notional filter");
                 }
             }
@@ -287,23 +287,23 @@ namespace Binance.Net.Clients.SpotApi
                 }
             }
 
-            if (symbolData.MinNotionalFilter == null || quantity == null || outputPrice == null)
+            if (symbolData.NotionalFilter == null || quantity == null || outputPrice == null)
                 return BinanceTradeRuleResult.CreatePassed(outputQuantity, outputQuoteQuantity, outputPrice, outputStopPrice);
 
             var currentQuantity = outputQuantity ?? quantity.Value;
             var notional = currentQuantity * outputPrice.Value;
-            if (notional < symbolData.MinNotionalFilter.MinNotional)
+            if (notional < symbolData.NotionalFilter.MinNotional)
             {
                 if (Options.SpotApiOptions.TradeRulesBehaviour == TradeRulesBehaviour.ThrowError)
                 {
                     return BinanceTradeRuleResult.CreateFailed(
-                        $"Trade rules check failed: MinNotional filter failed. Order quantity: {notional}, minimal order quantity: {symbolData.MinNotionalFilter.MinNotional}");
+                        $"Trade rules check failed: MinNotional filter failed. Order quantity: {notional}, minimal order quantity: {symbolData.NotionalFilter.MinNotional}");
                 }
 
                 if (symbolData.LotSizeFilter == null)
                     return BinanceTradeRuleResult.CreateFailed("Trade rules check failed: MinNotional filter failed. Unable to auto comply because LotSizeFilter not present");
 
-                var minQuantity = symbolData.MinNotionalFilter.MinNotional / outputPrice.Value;
+                var minQuantity = symbolData.NotionalFilter.MinNotional / outputPrice.Value;
                 var stepSize = symbolData.LotSizeFilter!.StepSize;
                 outputQuantity = BinanceHelpers.Floor(minQuantity + (stepSize - minQuantity % stepSize));
                 _log.Write(LogLevel.Information, $"Quantity clamped from {currentQuantity} to {outputQuantity} based on min notional filter");
