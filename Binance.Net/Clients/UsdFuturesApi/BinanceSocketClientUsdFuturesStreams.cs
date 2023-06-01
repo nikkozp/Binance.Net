@@ -57,6 +57,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
         private const string listenKeyExpiredEvent = "listenKeyExpired";
         private const string strategyUpdateEvent = "STRATEGY_UPDATE";
         private const string gridUpdateEvent = "GRID_UPDATE";
+        private const string triggerOrderReject = "CONDITIONAL_ORDER_TRIGGER_REJECT";
         #endregion
 
         #region constructor/destructor
@@ -400,6 +401,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
             Action<DataEvent<BinanceStreamEvent>>? onListenKeyExpired,
             Action<DataEvent<BinanceStrategyUpdate>>? onStrategyUpdate,
             Action<DataEvent<BinanceGridUpdate>>? onGridUpdate,
+            Action<DataEvent<BinanceTriggerOrderRejectUpdated>>? onTriggerOrderRejectUpdate,
             CancellationToken ct = default)
         {
             listenKey.ValidateNotNull(nameof(listenKey));
@@ -490,6 +492,15 @@ namespace Binance.Net.Clients.UsdFuturesApi
                             var result = Deserialize<BinanceGridUpdate>(token);
                             if (result)
                                 onGridUpdate?.Invoke(data.As(result.Data, combinedToken["stream"]!.Value<string>()));
+                            else
+                                _log.Write(LogLevel.Warning, "Couldn't deserialize data received from the GridUpdate event: " + result.Error);
+                            break;
+                        }
+                    case triggerOrderReject:
+                        {
+                            var result = Deserialize<BinanceTriggerOrderRejectUpdated>(token);
+                            if (result)
+                                onTriggerOrderRejectUpdate?.Invoke(data.As(result.Data, combinedToken["stream"]!.Value<string>()));
                             else
                                 _log.Write(LogLevel.Warning, "Couldn't deserialize data received from the GridUpdate event: " + result.Error);
                             break;

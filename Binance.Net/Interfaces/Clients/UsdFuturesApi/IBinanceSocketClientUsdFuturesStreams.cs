@@ -340,6 +340,7 @@ namespace Binance.Net.Interfaces.Clients.UsdFuturesApi
         /// <param name="onListenKeyExpired">Responds when the listen key for the stream has expired. Initiate a new instance of the stream here</param>
         /// <param name="onStrategyUpdate">The event handler for whenever a strategy update is received</param>
         /// <param name="onGridUpdate">The event handler for whenever a grid update is received</param>
+        /// <param name="onTriggerOrderRejectUpdate">The event handler when a triggered TP/SL order got rejected</param>
         /// <param name="ct">Cancellation token for closing this subscription</param>
         /// <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
         Task<CallResult<UpdateSubscription>> SubscribeToUserDataUpdatesAsync(
@@ -351,6 +352,7 @@ namespace Binance.Net.Interfaces.Clients.UsdFuturesApi
             Action<DataEvent<BinanceStreamEvent>> onListenKeyExpired,
             Action<DataEvent<BinanceStrategyUpdate>>? onStrategyUpdate,
             Action<DataEvent<BinanceGridUpdate>>? onGridUpdate,
+            Action<DataEvent<BinanceTriggerOrderRejectUpdated>>? onTriggerOrderRejectUpdate,
             CancellationToken ct = default);
 
         
