@@ -144,7 +144,7 @@ namespace Binance.Net.Clients.SpotApi
                             if (result)
                             {
                                 result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                                onOrderUpdateMessage?.Invoke(data.As(result.Data, result.Data.Id.ToString()));
+                                onOrderUpdateMessage?.Invoke(data.As(result.Data, result.Data.OrderId.ToString()));
                             }
                             else
                             {

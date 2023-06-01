@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -26,6 +28,8 @@ namespace Binance.Net.Clients.UsdFuturesApi
         private const string newOrderEndpoint = "order";
         private const string multipleNewOrdersEndpoint = "batchOrders";
         private const string queryOrderEndpoint = "order";
+        private const string modifyOrderEndpoint = "order";
+        private const string multipleModifyOrdersEndpoint = "batchOrders";
         private const string cancelOrderEndpoint = "order";
         private const string cancelMultipleOrdersEndpoint = "batchOrders";
         private const string cancelAllOrdersEndpoint = "allOpenOrders";
@@ -209,6 +213,91 @@ namespace Binance.Net.Clients.UsdFuturesApi
             }
 
             return response.As<IEnumerable<CallResult<BinanceFuturesUsdtPlacedOrder>>>(result);
+        }
+
+        #endregion
+
+        #region Modify Order
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<BinanceFuturesUsdtOrder>> ModifyOrderAsync(
+            string symbol, 
+            OrderSide side,
+            decimal quantity, 
+            decimal price, 
+            long? orderId = null, 
+            string clientOrderId = null,
+            int ? receiveWindow = null,
+            CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>
+            {
+                { "symbol", symbol },
+                { "side", JsonConvert.SerializeObject(side, new OrderSideConverter(false)) },
+                { "quantity", quantity.ToString(CultureInfo.InvariantCulture) },
+                { "price", price.ToString(CultureInfo.InvariantCulture) }
+            };
+
+            parameters.AddOptionalParameter("orderId", orderId?.ToString(CultureInfo.InvariantCulture));
+            parameters.AddOptionalParameter("origClientOrderId", clientOrderId);
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+
+            var result = await _baseClient.SendRequestInternal<BinanceFuturesUsdtOrder>(_baseClient.GetUrl(modifyOrderEndpoint, api, "1"), HttpMethod.Put, ct, parameters, true).ConfigureAwait(false);
+
+            return result;
+        }
+
+        #endregion
+
+        #region Multiple Modify Orders 
+
+        /// <inheritdoc />
+        public async Task<WebCallResult<IEnumerable<CallResult<BinanceFuturesUsdtOrder>>>> ModifyMultipleOrderAsync(
+            BinanceFuturesBatchModifyOrder[] orders,
+            int? receiveWindow = null,
+            CancellationToken ct = default)
+        {
+            if (orders.Length <= 0 || orders.Length > 5)
+                throw new ArgumentException("Order list should be at least 1 and max 5 orders");
+
+            var parameters = new Dictionary<string, object>();
+            var parameterOrders = new Dictionary<string, object>[orders.Length];
+            int i = 0;
+            foreach (var order in orders)
+            {
+                var orderParameters = new Dictionary<string, object>
+                {
+                    { "symbol", order.Symbol },
+                    { "side", JsonConvert.SerializeObject(order.Side, new OrderSideConverter(false)) },
+                    { "quantity", order.Quantity.ToString(CultureInfo.InvariantCulture) },
+                    { "price", order.Price.ToString(CultureInfo.InvariantCulture) },
+                    //{ "timestamp", DateTimeConverter.ConvertToMilliseconds(DateTime.UtcNow) }
+                };
+
+                orderParameters.AddOptionalParameter("orderId", order.OrderId?.ToString(CultureInfo.InvariantCulture));
+                orderParameters.AddOptionalParameter("origClientOrderId", order.ClientOrderId);
+                orderParameters.AddOptionalParameter("recvWindow", order.ReceiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+
+                parameterOrders[i] = orderParameters;
+                i++;
+            }
+
+            parameters.Add("batchOrders", JsonConvert.SerializeObject(parameterOrders));
+            parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.Options.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+
+            var response = await _baseClient.SendRequestInternal<IEnumerable<BinanceFuturesUsdtMultipleOrderModifyResult>>(_baseClient.GetUrl(multipleModifyOrdersEndpoint, api, "1"), HttpMethod.Put, ct, parameters, true, weight: 5).ConfigureAwait(false);
+            if (!response.Success)
+                return response.As<IEnumerable<CallResult<BinanceFuturesUsdtOrder>>>(default);
+
+            var result = new List<CallResult<BinanceFuturesUsdtOrder>>();
+            foreach (var item in response.Data)
+            {
+                result.Add(item.Code != 0
+                    ? new CallResult<BinanceFuturesUsdtOrder>(new ServerError(item.Code, item.Message))
+                    : new CallResult<BinanceFuturesUsdtOrder>(item));
+            }
+
+            return response.As<IEnumerable<CallResult<BinanceFuturesUsdtOrder>>>(result);
         }
 
         #endregion

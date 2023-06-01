@@ -71,6 +71,41 @@ namespace Binance.Net.Interfaces.Clients.UsdFuturesApi
             CancellationToken ct = default);
 
         /// <summary>
+        /// Modify order
+        /// <para><a href="https://binance-docs.github.io/apidocs/futures/en/#modify-order-trade" /></para>
+        /// </summary>
+        /// <param name="symbol">The symbol the order is for</param>
+        /// <param name="side">The order side (buy/sell)</param>
+        /// <param name="quantity">The quantity of the base symbol</param>
+        /// <param name="price">The price to use</param>
+        /// <param name="orderId">The order id of the order</param>
+        /// <param name="clientOrderId">The client order id of the order</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        Task<WebCallResult<BinanceFuturesUsdtOrder>> ModifyOrderAsync(
+            string symbol,
+            OrderSide side,
+            decimal quantity,
+            decimal price,
+            long? orderId = null,
+            string clientOrderId = null,
+            int? receiveWindow = null,
+            CancellationToken ct = default);
+
+        /// <summary>
+        /// Modify multiple orders in one call
+        /// <para><a href="https://binance-docs.github.io/apidocs/futures/en/#modify-order-trade" /></para>
+        /// </summary>
+        /// <param name="orders">The orders to modify</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>Returns a list of call results, one for each order. The order the results are in is the order the orders were sent</returns>
+        Task<WebCallResult<IEnumerable<CallResult<BinanceFuturesUsdtOrder>>>> ModifyMultipleOrderAsync(
+            BinanceFuturesBatchModifyOrder[] orders,
+            int? receiveWindow = null,
+            CancellationToken ct = default);
+
+        /// <summary>
         /// Retrieves data for a specific order. Either orderId or origClientOrderId should be provided.
         /// <para><a href="https://binance-docs.github.io/apidocs/futures/en/#query-order-user_data" /></para>
         /// </summary>

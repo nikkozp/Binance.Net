@@ -324,12 +324,12 @@ namespace Binance.Net.Clients.SpotApi
                 symbolIntervalPair.Key.ValidateBinanceSymbol();
 
             var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamKlineData>>>(data => onMessage(data.As<IBinanceStreamKlineData>(data.Data.Data, data.Data.Data.Symbol)));
-            
-            var symbols = symbolIntervalPairs.Select(s => 
-                                s.Key.ToLower(CultureInfo.InvariantCulture) + klineStreamEndpoint + "_" +
+
+            var symbols = symbolIntervalPairs.Select(s =>
+                                s.Key.ToLower(CultureInfo.InvariantCulture) + "@kline" + "_" +
                     JsonConvert.SerializeObject(s.Value, new KlineIntervalConverter(false))).Distinct().ToArray();
 
-            return await SubscribeAsync(BaseAddress, symbols, handler, ct).ConfigureAwait(false);
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, symbols, handler, ct).ConfigureAwait(false);
         }
 
         #endregion
@@ -499,138 +499,49 @@ namespace Binance.Net.Clients.SpotApi
         public async Task<CallResult<UpdateSubscription>> SubscribeToAllTickerUpdatesAsync(Action<DataEvent<IEnumerable<IBinanceTick>>> onMessage, CancellationToken ct = default)
         {
             var handler = new Action<DataEvent<BinanceCombinedStream<IEnumerable<BinanceStreamTick>>>>(data => onMessage(data.As<IEnumerable<IBinanceTick>>(data.Data.Data, data.Data.Stream)));
-            return await SubscribeAsync(BaseAddress, new[] { allSymbolTickerStreamEndpoint }, handler, ct).ConfigureAwait(false);
+            return await _client.SubscribeAsync(_client.Options.BaseAddress, new[] { "!ticker@arr" }, handler, ct).ConfigureAwait(false);
         }
-
-        #endregion
-
-        #region User Data Stream
-
-        /// <inheritdoc />
-        public async Task<CallResult<UpdateSubscription>> SubscribeToUserDataUpdatesAsync(
-            string listenKey,
-            Action<DataEvent<BinanceStreamOrderUpdate>>? onOrderUpdateMessage,
-            Action<DataEvent<BinanceStreamOrderList>>? onOcoOrderUpdateMessage,
-            Action<DataEvent<BinanceStreamPositionsUpdate>>? onAccountPositionMessage,
-            Action<DataEvent<BinanceStreamBalanceUpdate>>? onAccountBalanceUpdate,
-            CancellationToken ct = default)
-        {
-            listenKey.ValidateNotNull(nameof(listenKey));
-
-            var handler = new Action<DataEvent<string>>(data =>
-            {
-                var combinedToken = JToken.Parse(data.Data);
-                var token = combinedToken["data"];
-                if (token == null)
-                    return;
-
-                var evnt = token["e"]?.ToString();
-                if (evnt == null)
-                    return;
-
-                switch (evnt)
-                {
-                    case executionUpdateEvent:
-                        {
-                            var result = Deserialize<BinanceStreamOrderUpdate>(token);
-                            if (result) 
-                            {
-                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                                onOrderUpdateMessage?.Invoke(data.As(result.Data, result.Data.OrderId.ToString()));
-                            }
-                            else
-                                _log.Write(LogLevel.Warning,
-                                    "Couldn't deserialize data received from order stream: " + result.Error);
-                            break;
-                        }
-                    case ocoOrderUpdateEvent:
-                        {
-                            var result = Deserialize<BinanceStreamOrderList>(token);
-                            if (result)
-                            {
-                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                                onOcoOrderUpdateMessage?.Invoke(data.As(result.Data, result.Data.Id.ToString()));
-                            }
-                            else
-                                _log.Write(LogLevel.Warning,
-                                    "Couldn't deserialize data received from oco order stream: " + result.Error);
-                            break;
-                        }
-                    case accountPositionUpdateEvent:
-                        {
-                            var result = Deserialize<BinanceStreamPositionsUpdate>(token);
-                            if (result)
-                            {
-                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                                onAccountPositionMessage?.Invoke(data.As(result.Data));
-                            }
-                            else
-                                _log.Write(LogLevel.Warning,
-                                    "Couldn't deserialize data received from account position stream: " + result.Error);
-                            break;
-                        }
-                    case balanceUpdateEvent:
-                        {
-                            var result = Deserialize<BinanceStreamBalanceUpdate>(token);
-                            if (result)
-                            {
-                                result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                                onAccountBalanceUpdate?.Invoke(data.As(result.Data, result.Data.Asset));
-                            }
-                            else
-                                _log.Write(LogLevel.Warning,
-                                    "Couldn't deserialize data received from account position stream: " + result.Error);
-                            break;
-                        }
-                    default:
-                        _log.Write(LogLevel.Warning, $"Received unknown user data event {evnt}: " + data);
-                        break;
-                }
-            });
 
         #endregion
 
         #region Blvt info update
-        /// <inheritdoc />
-        public Task<CallResult<UpdateSubscription>> SubscribeToBlvtInfoUpdatesAsync(string token,
-            Action<DataEvent<BinanceBlvtInfoUpdate>> onMessage, CancellationToken ct = default)
-            => SubscribeToBlvtInfoUpdatesAsync(new List<string> { token }, onMessage, ct);
+            /// <inheritdoc />
+            public Task<CallResult<UpdateSubscription>> SubscribeToBlvtInfoUpdatesAsync(string token,
+                Action<DataEvent<BinanceBlvtInfoUpdate>> onMessage, CancellationToken ct = default)
+                => SubscribeToBlvtInfoUpdatesAsync(new List<string> { token }, onMessage, ct);
 
-        /// <inheritdoc />
-        public async Task<CallResult<UpdateSubscription>> SubscribeToBlvtInfoUpdatesAsync(IEnumerable<string> tokens, Action<DataEvent<BinanceBlvtInfoUpdate>> onMessage, CancellationToken ct = default)
-        {
-            if (_client.ClientOptions.BlvtStreamAddress == null)
-                throw new Exception("No url found for Blvt stream, check the `BlvtStreamAddress` client option");
+            /// <inheritdoc />
+            public async Task<CallResult<UpdateSubscription>> SubscribeToBlvtInfoUpdatesAsync(IEnumerable<string> tokens, Action<DataEvent<BinanceBlvtInfoUpdate>> onMessage, CancellationToken ct = default)
+            {
+                if (_client.ClientOptions.BlvtStreamAddress == null)
+                    throw new Exception("No url found for Blvt stream, check the `BlvtStreamAddress` client option");
 
-            tokens = tokens.Select(a => a.ToUpper(CultureInfo.InvariantCulture) + "@tokenNav").ToArray();
-            var handler = new Action<DataEvent<BinanceCombinedStream<BinanceBlvtInfoUpdate>>>(data => onMessage(data.As(data.Data.Data, data.Data.Data.TokenName)));
-            return await _client.SubscribeAsync(_client.ClientOptions.BlvtStreamAddress, tokens, handler, ct).ConfigureAwait(false);
-        }
+                tokens = tokens.Select(a => a.ToUpper(CultureInfo.InvariantCulture) + "@tokenNav").ToArray();
+                var handler = new Action<DataEvent<BinanceCombinedStream<BinanceBlvtInfoUpdate>>>(data => onMessage(data.As(data.Data.Data, data.Data.Data.TokenName)));
+                return await _client.SubscribeAsync(_client.ClientOptions.BlvtStreamAddress, tokens, handler, ct).ConfigureAwait(false);
+            }
 
         #endregion
 
         #region Blvt kline update
-        /// <inheritdoc />
-        public Task<CallResult<UpdateSubscription>> SubscribeToBlvtKlineUpdatesAsync(string token,
-            KlineInterval interval, Action<DataEvent<BinanceStreamKlineData>> onMessage, CancellationToken ct = default) =>
-            SubscribeToBlvtKlineUpdatesAsync(new List<string> { token }, interval, onMessage, ct);
+            /// <inheritdoc />
+            public Task<CallResult<UpdateSubscription>> SubscribeToBlvtKlineUpdatesAsync(string token,
+                KlineInterval interval, Action<DataEvent<BinanceStreamKlineData>> onMessage, CancellationToken ct = default) =>
+                SubscribeToBlvtKlineUpdatesAsync(new List<string> { token }, interval, onMessage, ct);
 
-        /// <inheritdoc />
-        public async Task<CallResult<UpdateSubscription>> SubscribeToBlvtKlineUpdatesAsync(IEnumerable<string> tokens, KlineInterval interval, Action<DataEvent<BinanceStreamKlineData>> onMessage, CancellationToken ct = default)
-        {
-            if (_client.ClientOptions.BlvtStreamAddress == null)
-                throw new Exception("No url found for Blvt stream, check the `BlvtStreamAddress` client option");
+            /// <inheritdoc />
+            public async Task<CallResult<UpdateSubscription>> SubscribeToBlvtKlineUpdatesAsync(IEnumerable<string> tokens, KlineInterval interval, Action<DataEvent<BinanceStreamKlineData>> onMessage, CancellationToken ct = default)
+            {
+                if (_client.ClientOptions.BlvtStreamAddress == null)
+                    throw new Exception("No url found for Blvt stream, check the `BlvtStreamAddress` client option");
 
-            tokens = tokens.Select(a => a.ToUpper(CultureInfo.InvariantCulture) + "@nav_kline" + "_" + JsonConvert.SerializeObject(interval, new KlineIntervalConverter(false))).ToArray();
-            var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamKlineData>>>(data => onMessage(data.As(data.Data.Data, data.Data.Data.Symbol)));
-            return await _client.SubscribeAsync(_client.ClientOptions.BlvtStreamAddress, tokens, handler, ct).ConfigureAwait(false);
-        }
-
-        #endregion
+                tokens = tokens.Select(a => a.ToUpper(CultureInfo.InvariantCulture) + "@nav_kline" + "_" + JsonConvert.SerializeObject(interval, new KlineIntervalConverter(false))).ToArray();
+                var handler = new Action<DataEvent<BinanceCombinedStream<BinanceStreamKlineData>>>(data => onMessage(data.As(data.Data.Data, data.Data.Data.Symbol)));
+                return await _client.SubscribeAsync(_client.ClientOptions.BlvtStreamAddress, tokens, handler, ct).ConfigureAwait(false);
+            }
 
         #endregion
 
         #endregion
-
     }
 }

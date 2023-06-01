@@ -58,11 +58,11 @@ namespace Binance.Net.Objects.Models
         /// </summary>
         [JsonProperty("cummulativeQuoteQty")]
         public decimal QuoteQuantityFilled { get; set; }
-        /// <summary>
-        /// The original quote order quantity of the order, as specified in the order parameters by the user
-        /// </summary>
-        [JsonProperty("origQuoteOrderQty")]
-        public decimal QuoteQuantity { get; set; }
+        ///// <summary>
+        ///// The original quote order quantity of the order, as specified in the order parameters by the user
+        ///// </summary>
+        //[JsonProperty("origQuoteOrderQty")]
+        //public decimal QuoteQuantity { get; set; }
 
         /// <summary>
         /// The status of the order
@@ -113,6 +113,11 @@ namespace Binance.Net.Objects.Models
         /// Quantity which is still open to be filled
         /// </summary>
         public decimal QuantityRemaining => Quantity - QuantityFilled;
+
+        /// <summary>
+        /// The Quote order quantity of the order, as specified in the order parameters by the user
+        /// </summary>
+        public decimal QuoteQuantity => Price * Quantity;
 
         /// <summary>
         /// The average price the order was filled
