@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Binance.Net.Objects.Models.Futures;
 using Binance.Net.Objects.Models.Spot;
+using Binance.Net.Objects.Models.Futures.CopyTrading;
 
 namespace Binance.Net.Interfaces.Clients.UsdFuturesApi
 {
@@ -317,5 +318,12 @@ namespace Binance.Net.Interfaces.Clients.UsdFuturesApi
         /// <param name="ct">Cancellation token</param>
         /// <returns>The aggregated trades list for the symbol</returns>
         Task<WebCallResult<IEnumerable<BinanceAggregatedTrade>>> GetAggregatedTradeHistoryAsync(string symbol, long? fromId = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Get support symbols in Copy Trading
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<WebCallResult<IEnumerable<BinanceCopyTradingSupportSymbol>>> GetCopyTradingSymbolsAsync(CancellationToken ct = default);
     }
 }

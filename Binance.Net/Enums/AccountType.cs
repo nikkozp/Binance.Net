@@ -66,6 +66,51 @@ namespace Binance.Net.Enums
         /// Trade group 9
         /// </summary>
         [Map("TRD_GRP_009")]
-        TradeGroup009
+        TradeGroup009,
+        /// <summary>
+        /// Trade group 10
+        /// </summary>
+        [Map("TRD_GRP_010")]
+        TradeGroup010,
+        /// <summary>
+        /// Trade group 11
+        /// </summary>
+        [Map("TRD_GRP_011")]
+        TradeGroup011,
+        /// <summary>
+        /// Trade group 12
+        /// </summary>
+        [Map("TRD_GRP_012")]
+        TradeGroup012,
+        /// <summary>
+        /// Trade group 13
+        /// </summary>
+        [Map("TRD_GRP_013")]
+        TradeGroup013,
+        /// <summary>
+        /// Trade group 14
+        /// </summary>
+        [Map("TRD_GRP_014")]
+        TradeGroup014,
+        /// <summary>
+        /// Trade group 15
+        /// </summary>
+        [Map("TRD_GRP_015")]
+        TradeGroup015,
+        /// <summary>
+        /// Trade group 16
+        /// </summary>
+        [Map("TRD_GRP_016")]
+        TradeGroup016,
+        /// <summary>
+        /// Trade group 17
+        /// </summary>
+        [Map("TRD_GRP_017")]
+        TradeGroup017,
+        /// <summary>
+        /// Trade group 18
+        /// </summary>
+        [Map("TRD_GRP_018")]
+        TradeGroup018
     }
 }

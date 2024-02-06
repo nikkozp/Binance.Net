@@ -10,8 +10,10 @@ using Binance.Net.Enums;
 using Binance.Net.Interfaces;
 using Binance.Net.Interfaces.Clients.UsdFuturesApi;
 using Binance.Net.Objects.Models.Futures;
+using Binance.Net.Objects.Models.Futures.CopyTrading;
 using Binance.Net.Objects.Models.Spot;
 using CryptoExchange.Net;
+using CryptoExchange.Net.CommonObjects;
 using CryptoExchange.Net.Converters;
 using CryptoExchange.Net.Logging;
 using CryptoExchange.Net.Objects;
@@ -514,6 +516,23 @@ namespace Binance.Net.Clients.UsdFuturesApi
                 { "symbol", symbol }
             };
             return await _baseClient.SendRequestInternal<BinanceFuturesAssetIndex>(_baseClient.GetUrl(assetIndexEndpoint, api, publicVersion), HttpMethod.Get, ct, parameters).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Copy Trading Info
+
+        public async Task<WebCallResult<IEnumerable<BinanceCopyTradingSupportSymbol>>> GetCopyTradingSymbolsAsync(CancellationToken ct = default)
+        {
+            string endpoint = "https://www.binance.com/bapi/futures/v1/public/future/copy-trade/common/support-symbols";
+
+            var parameters = new Dictionary<string, object>()
+            {
+                { "isUm", true }
+            };
+
+            var result = await _baseClient.SendRequestInternal<IEnumerable<BinanceCopyTradingSupportSymbol>>(new Uri(endpoint), HttpMethod.Get, ct, parameters: parameters).ConfigureAwait(false);
+            return result.As<IEnumerable<BinanceCopyTradingSupportSymbol>>(result.Data);
         }
 
         #endregion

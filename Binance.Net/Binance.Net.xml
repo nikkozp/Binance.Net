@@ -1997,7 +1997,7 @@
         <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceSocketClientUsdFuturesStreams.SubscribeToSymbolUpdatesAsync(System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamSymbolUpdate}},System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceSocketClientUsdFuturesStreams.SubscribeToUserDataUpdatesAsync(System.String,System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamConfigUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamMarginUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamAccountUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamOrderUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.BinanceStreamEvent}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceStrategyUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceGridUpdate}},System.Threading.CancellationToken)">
+        <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceSocketClientUsdFuturesStreams.SubscribeToUserDataUpdatesAsync(System.String,System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamConfigUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamMarginUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamAccountUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamOrderUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.BinanceStreamEvent}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceStrategyUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceGridUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderRejectUpdated}},System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
         <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceSocketClientUsdFuturesStreams.HandleQueryResponse``1(CryptoExchange.Net.Sockets.SocketConnection,System.Object,Newtonsoft.Json.Linq.JToken,CryptoExchange.Net.Objects.CallResult{``0}@)">
@@ -2081,6 +2081,51 @@
         <member name="F:Binance.Net.Enums.AccountType.TradeGroup009">
             <summary>
             Trade group 9
+            </summary>
+        </member>
+        <member name="F:Binance.Net.Enums.AccountType.TradeGroup010">
+            <summary>
+            Trade group 10
+            </summary>
+        </member>
+        <member name="F:Binance.Net.Enums.AccountType.TradeGroup011">
+            <summary>
+            Trade group 11
+            </summary>
+        </member>
+        <member name="F:Binance.Net.Enums.AccountType.TradeGroup012">
+            <summary>
+            Trade group 12
+            </summary>
+        </member>
+        <member name="F:Binance.Net.Enums.AccountType.TradeGroup013">
+            <summary>
+            Trade group 13
+            </summary>
+        </member>
+        <member name="F:Binance.Net.Enums.AccountType.TradeGroup014">
+            <summary>
+            Trade group 14
+            </summary>
+        </member>
+        <member name="F:Binance.Net.Enums.AccountType.TradeGroup015">
+            <summary>
+            Trade group 15
+            </summary>
+        </member>
+        <member name="F:Binance.Net.Enums.AccountType.TradeGroup016">
+            <summary>
+            Trade group 16
+            </summary>
+        </member>
+        <member name="F:Binance.Net.Enums.AccountType.TradeGroup017">
+            <summary>
+            Trade group 17
+            </summary>
+        </member>
+        <member name="F:Binance.Net.Enums.AccountType.TradeGroup018">
+            <summary>
+            Trade group 18
             </summary>
         </member>
         <member name="T:Binance.Net.Enums.AccountUpdateReason">
@@ -4062,6 +4107,11 @@
         <member name="F:Binance.Net.Enums.TimeInForce.GoodTillExpiredOrCanceled">
             <summary>
             Good til the order expires or is canceled
+            </summary>
+        </member>
+        <member name="F:Binance.Net.Enums.TimeInForce.GoodTillDate">
+            <summary>
+            Good til date
             </summary>
         </member>
         <member name="T:Binance.Net.Enums.TradeRulesBehaviour">
@@ -10129,6 +10179,13 @@
             <param name="ct">Cancellation token</param>
             <returns>The aggregated trades list for the symbol</returns>
         </member>
+        <member name="M:Binance.Net.Interfaces.Clients.UsdFuturesApi.IBinanceClientUsdFuturesApiExchangeData.GetCopyTradingSymbolsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Get support symbols in Copy Trading
+            </summary>
+            <param name="ct"></param>
+            <returns></returns>
+        </member>
         <member name="T:Binance.Net.Interfaces.Clients.UsdFuturesApi.IBinanceClientUsdFuturesApiTrading">
             <summary>
             Binance USD-M futures trading endpoints, placing and mananging orders.
@@ -10708,7 +10765,7 @@
             <param name="ct">Cancellation token for closing this subscription</param>
             <returns></returns>
         </member>
-        <member name="M:Binance.Net.Interfaces.Clients.UsdFuturesApi.IBinanceSocketClientUsdFuturesStreams.SubscribeToUserDataUpdatesAsync(System.String,System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamConfigUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamMarginUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamAccountUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamOrderUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.BinanceStreamEvent}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceStrategyUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceGridUpdate}},System.Threading.CancellationToken)">
+        <member name="M:Binance.Net.Interfaces.Clients.UsdFuturesApi.IBinanceSocketClientUsdFuturesStreams.SubscribeToUserDataUpdatesAsync(System.String,System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamConfigUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamMarginUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamAccountUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceFuturesStreamOrderUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.BinanceStreamEvent}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceStrategyUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceGridUpdate}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderRejectUpdated}},System.Threading.CancellationToken)">
             <summary>
             Subscribes to the account update stream. Prior to using this, the BinanceClient.Futures.UserStreams.StartUserStream method should be called.
             <para><a href="https://binance-docs.github.io/apidocs/futures/en/#user-data-streams" /></para>
@@ -10721,6 +10778,7 @@
             <param name="onListenKeyExpired">Responds when the listen key for the stream has expired. Initiate a new instance of the stream here</param>
             <param name="onStrategyUpdate">The event handler for whenever a strategy update is received</param>
             <param name="onGridUpdate">The event handler for whenever a grid update is received</param>
+            <param name="onTriggerOrderRejectUpdate">The event handler when a triggered TP/SL order got rejected</param>
             <param name="ct">Cancellation token for closing this subscription</param>
             <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
         </member>
@@ -25046,6 +25104,36 @@
         <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceStrategyInfo.OpCode">
             <summary>
             Op code
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderRejectUpdated">
+            <summary>
+            Update when a triggered TP/SL order got rejected
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderRejectUpdated.TrigerOrderReject">
+            <summary>
+            Update info
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderReject">
+            <summary>
+            Triggered TP/SL order rejected info
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderReject.Symbol">
+            <summary>
+            Symbol
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderReject.OrderId">
+            <summary>
+            OrderId
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderReject.Reason">
+            <summary>
+            Reason
             </summary>
         </member>
         <member name="T:Binance.Net.SymbolOrderBooks.BinanceFuturesCoinSymbolOrderBook">
