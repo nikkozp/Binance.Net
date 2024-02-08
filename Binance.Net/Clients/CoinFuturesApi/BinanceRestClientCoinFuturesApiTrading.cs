@@ -183,7 +183,7 @@ namespace Binance.Net.Clients.CoinFuturesApi
             parameters.Add("batchOrders", JsonConvert.SerializeObject(parameterOrders));
             parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.ClientOptions.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
-            var response = await _baseClient.SendRequestInternal<IEnumerable<BinanceFuturesCoinMultipleOrderPlaceResult>>(_baseClient.GetUrl(multipleNewOrdersEndpoint, api, "1"), HttpMethod.Post, ct, parameters, true, weight: 5).ConfigureAwait(false);
+            var response = await _baseClient.SendRequestInternal<IEnumerable<BinanceFuturesMultipleOrderPlaceResult>>(_baseClient.GetUrl(multipleNewOrdersEndpoint, api, "1"), HttpMethod.Post, ct, parameters, true, weight: 5).ConfigureAwait(false);
             if (!response.Success)
                 return response.As<IEnumerable<CallResult<BinanceFuturesOrder>>>(default);
 
@@ -240,7 +240,7 @@ namespace Binance.Net.Clients.CoinFuturesApi
 
             var result = await _baseClient.SendRequestInternal<BinanceFuturesOrder>(_baseClient.GetUrl(cancelOrderEndpoint, api, "1"), HttpMethod.Delete, ct, parameters, true).ConfigureAwait(false);
             if (result)
-                _baseClient.InvokeOrderCanceled(new OrderId { SourceObject = result.Data, Id = result.Data.Id.ToString(CultureInfo.InvariantCulture) });
+                _baseClient.InvokeOrderCanceled(new OrderId { SourceObject = result.Data, Id = result.Data.OrderId.ToString(CultureInfo.InvariantCulture) });
             return result;
         }
 
@@ -282,7 +282,7 @@ namespace Binance.Net.Clients.CoinFuturesApi
         #region Cancel Multiple Orders
 
         /// <inheritdoc />
-        public async Task<WebCallResult<IEnumerable<CallResult<BinanceFuturesCancelOrder>>>> CancelMultipleOrdersAsync(string symbol, List<long>? orderIdList = null, List<string>? origClientOrderIdList = null, long? receiveWindow = null, CancellationToken ct = default)
+        public async Task<WebCallResult<IEnumerable<CallResult<BinanceFuturesOrder>>>> CancelMultipleOrdersAsync(string symbol, List<long>? orderIdList = null, List<string>? origClientOrderIdList = null, long? receiveWindow = null, CancellationToken ct = default)
         {
             if (orderIdList == null && origClientOrderIdList == null)
                 throw new ArgumentException("Either orderIdList or origClientOrderIdList must be sent");
@@ -306,7 +306,7 @@ namespace Binance.Net.Clients.CoinFuturesApi
 
             parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.ClientOptions.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
-            var response = await _baseClient.SendRequestInternal<IEnumerable<BinanceFuturesCoinMultipleOrderCancelResult>>(_baseClient.GetUrl(cancelMultipleOrdersEndpoint, api, "1"), HttpMethod.Delete, ct, parameters, true).ConfigureAwait(false);
+            var response = await _baseClient.SendRequestInternal<IEnumerable<BinanceFuturesMultipleOrderCancelResult>>(_baseClient.GetUrl(cancelMultipleOrdersEndpoint, api, "1"), HttpMethod.Delete, ct, parameters, true).ConfigureAwait(false);
 
             if (!response.Success)
                 return response.As<IEnumerable<CallResult<BinanceFuturesOrder>>>(default);

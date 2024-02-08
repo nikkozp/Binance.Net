@@ -511,22 +511,13 @@ namespace Binance.Net.Clients.UsdFuturesApi
                                 _logger.Log(LogLevel.Warning, "Couldn't deserialize data received from the GridUpdate event: " + result.Error);
                             break;
                         }
-                    case "CONDITIONAL_ORDER_TRIGGER_REJECT":
+                    case triggerOrderReject:
                         {
                             var result = Deserialize<BinanceConditionOrderTriggerRejectUpdate>(token);
                             if (result)
                                 onConditionalOrderTriggerRejectUpdate?.Invoke(data.As(result.Data, combinedToken["stream"]!.Value<string>()));
                             else
                                 _logger.Log(LogLevel.Warning, "Couldn't deserialize data received from the CONDITIONAL_ORDER_TRIGGER_REJECT event: " + result.Error);
-                            break;
-                        }
-                    case triggerOrderReject:
-                        {
-                            var result = Deserialize<BinanceTriggerOrderRejectUpdated>(token);
-                            if (result)
-                                onTriggerOrderRejectUpdate?.Invoke(data.As(result.Data, combinedToken["stream"]!.Value<string>()));
-                            else
-                                _log.Write(LogLevel.Warning, "Couldn't deserialize data received from the GridUpdate event: " + result.Error);
                             break;
                         }
                     default:

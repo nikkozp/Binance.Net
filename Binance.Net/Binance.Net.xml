@@ -2115,6 +2115,12 @@
         <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceRestClientUsdFuturesApiTrading.GetOrderEditHistoryAsync(System.String,System.Nullable{System.Int64},System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Nullable{System.Int32},System.Nullable{System.Int64},System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
+        <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceRestClientUsdFuturesApiTrading.ModifyOrderAsync(System.String,Binance.Net.Enums.OrderSide,System.Decimal,System.Decimal,System.Nullable{System.Int64},System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceRestClientUsdFuturesApiTrading.ModifyMultipleOrderAsync(Binance.Net.Objects.Models.Futures.BinanceFuturesBatchModifyOrder[],System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
         <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceRestClientUsdFuturesApiTrading.CancelOrderAsync(System.String,System.Nullable{System.Int64},System.String,System.Nullable{System.Int64},System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
@@ -2198,6 +2204,9 @@
             <inheritdoc />
         </member>
         <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceSocketClientUsdFuturesApi.SubscribeToKlineUpdatesAsync(System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{Binance.Net.Enums.KlineInterval},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Interfaces.IBinanceStreamKlineData}},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceSocketClientUsdFuturesApi.SubscribeToKlineUpdatesAsync(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Binance.Net.Enums.KlineInterval}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Interfaces.IBinanceStreamKlineData}},System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
         <member name="M:Binance.Net.Clients.UsdFuturesApi.BinanceSocketClientUsdFuturesApi.SubscribeToContinuousContractKlineUpdatesAsync(System.String,Binance.Net.Enums.ContractType,Binance.Net.Enums.KlineInterval,System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Objects.Models.Futures.Socket.BinanceStreamContinuousKlineData}},System.Threading.CancellationToken)">
@@ -11200,6 +11209,13 @@
             <param name="ct">Cancellation token</param>
             <returns>The aggregated trades list for the symbol</returns>
         </member>
+        <member name="M:Binance.Net.Interfaces.Clients.UsdFuturesApi.IBinanceRestClientUsdFuturesApiExchangeData.GetCopyTradingSymbolsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Get support symbols in Copy Trading
+            </summary>
+            <param name="ct"></param>
+            <returns></returns>
+        </member>
         <member name="T:Binance.Net.Interfaces.Clients.UsdFuturesApi.IBinanceRestClientUsdFuturesApiTrading">
             <summary>
             Binance USD-M futures trading endpoints, placing and mananging orders.
@@ -11236,6 +11252,30 @@
             <para><a href="https://binance-docs.github.io/apidocs/futures/en/#place-multiple-orders-trade" /></para>
             </summary>
             <param name="orders">The orders to place</param>
+            <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+            <param name="ct">Cancellation token</param>
+            <returns>Returns a list of call results, one for each order. The order the results are in is the order the orders were sent</returns>
+        </member>
+        <member name="M:Binance.Net.Interfaces.Clients.UsdFuturesApi.IBinanceRestClientUsdFuturesApiTrading.ModifyOrderAsync(System.String,Binance.Net.Enums.OrderSide,System.Decimal,System.Decimal,System.Nullable{System.Int64},System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Modify order
+            <para><a href="https://binance-docs.github.io/apidocs/futures/en/#modify-order-trade" /></para>
+            </summary>
+            <param name="symbol">The symbol the order is for</param>
+            <param name="side">The order side (buy/sell)</param>
+            <param name="quantity">The quantity of the base symbol</param>
+            <param name="price">The price to use</param>
+            <param name="orderId">The order id of the order</param>
+            <param name="clientOrderId">The client order id of the order</param>
+            <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+            <param name="ct">Cancellation token</param>
+        </member>
+        <member name="M:Binance.Net.Interfaces.Clients.UsdFuturesApi.IBinanceRestClientUsdFuturesApiTrading.ModifyMultipleOrderAsync(Binance.Net.Objects.Models.Futures.BinanceFuturesBatchModifyOrder[],System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Modify multiple orders in one call
+            <para><a href="https://binance-docs.github.io/apidocs/futures/en/#modify-order-trade" /></para>
+            </summary>
+            <param name="orders">The orders to modify</param>
             <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
             <param name="ct">Cancellation token</param>
             <returns>Returns a list of call results, one for each order. The order the results are in is the order the orders were sent</returns>
@@ -11586,6 +11626,16 @@
             </summary>
             <param name="symbols">The symbols</param>
             <param name="intervals">The intervals of the candlesticks</param>
+            <param name="onMessage">The event handler for the received data</param>
+            <param name="ct">Cancellation token for closing this subscription</param>
+            <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
+        </member>
+        <member name="M:Binance.Net.Interfaces.Clients.UsdFuturesApi.IBinanceSocketClientUsdFuturesApi.SubscribeToKlineUpdatesAsync(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Binance.Net.Enums.KlineInterval}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Binance.Net.Interfaces.IBinanceStreamKlineData}},System.Threading.CancellationToken)">
+            <summary>
+            Subscribes to the candlestick update stream for the provided symbols and intervals
+            <para><a href="https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-streams" /></para>
+            </summary>
+            <param name="symbolIntervalPairs">The symbol-interval pair of the candlesticks</param>
             <param name="onMessage">The event handler for the received data</param>
             <param name="ct">Cancellation token for closing this subscription</param>
             <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
@@ -14243,6 +14293,11 @@
         <member name="P:Binance.Net.Objects.Models.Spot.BinanceC2CUserTrade.AdvertisementRole">
             <summary>
             Advertisement role
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Spot.BinanceCanceledOrder">
+            <summary>
+            Information regarding a specific order
             </summary>
         </member>
         <member name="T:Binance.Net.Objects.Models.Spot.BinanceCloudMiningHistory">
@@ -20416,6 +20471,16 @@
             Minimal quantity which can be repaid
             </summary>
         </member>
+        <member name="T:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginCanceledOrder">
+            <summary>
+            Information regarding a specific order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginCanceledOrder.IsIsolated">
+            <summary>
+            If isolated margin (for margin account orders)
+            </summary>
+        </member>
         <member name="T:Binance.Net.Objects.Models.Spot.Margin.BinanceMarginDelistSchedule">
             <summary>
             Delist margin schedule
@@ -24141,6 +24206,46 @@
             Price
             </summary>
         </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesBatchModifyOrder">
+            <summary>
+            Parameters for a modify batch order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesBatchModifyOrder.Symbol">
+            <summary>
+            Symbol of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesBatchModifyOrder.Side">
+            <summary>
+            Side of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesBatchModifyOrder.Quantity">
+            <summary>
+            Quantity
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesBatchModifyOrder.Price">
+            <summary>
+            Price
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesBatchModifyOrder.OrderId">
+            <summary>
+            A unique id among
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesBatchModifyOrder.ClientOrderId">
+            <summary>
+            A unique id among order
+            </summary>
+        </member>
+        <member name="F:Binance.Net.Objects.Models.Futures.BinanceFuturesBatchModifyOrder.ReceiveWindow">
+            <summary>
+            The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request
+            </summary>
+        </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesBatchOrder">
             <summary>
             Parameters for a new futures batch order
@@ -24264,6 +24369,126 @@
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelAllOrders.Message">
             <summary>
             The execution message
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder">
+            <summary>
+            The result of cancel order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.Symbol">
+            <summary>
+            The symbol the order is for
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.Pair">
+            <summary>
+            Pair
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.OrderId">
+            <summary>
+            The order id as assigned by Binance
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.ClientOrderId">
+            <summary>
+            The order id as assigned by the client
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.Price">
+            <summary>
+            The price of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.QuantityFilled">
+            <summary>
+            Cumulative quantity
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.LastFilledQuantity">
+            <summary>
+            The quantity of the order that is executed
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.Quantity">
+            <summary>
+            The original quantity of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.ReduceOnly">
+            <summary>
+            Reduce Only
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.ClosePosition">
+            <summary>
+            if Close-All
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.Side">
+            <summary>
+            The side of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.Status">
+            <summary>
+            The current status of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.StopPrice">
+            <summary>
+            Stop price for the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.TimeInForce">
+            <summary>
+            For what time the order lasts
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.OriginalType">
+            <summary>
+            The type of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.Type">
+            <summary>
+            The type of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.ActivatePrice">
+            <summary>
+            Activation price, only return with TRAILING_STOP_MARKET order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.PriceRate">
+            <summary>
+            Callback rate, only return with TRAILING_STOP_MARKET order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.UpdateTime">
+            <summary>
+            The time the order was updated
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.WorkingType">
+            <summary>
+            The working type
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.PositionSide">
+            <summary>
+            The position side of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.PriceProtect">
+            <summary>
+            Price protect
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesCancelOrder.AveragePrice">
+            <summary>
+            Average price
             </summary>
         </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesChangeMarginTypeResult">
@@ -24890,26 +25115,6 @@
             Is multi assets mode enabled
             </summary>
         </member>
-        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesMultipleOrderCancelResult">
-            <summary>
-            Extension to be able to deserialize an error response as well
-            </summary>
-        </member>
-        <member name="T:Binance.Net.Objects.Models.Futures.BinanceUsdFuturesMultipleOrderCancelResult">
-            <summary>
-            Extension to be able to deserialize an error response as well
-            </summary>
-        </member>
-        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesMultipleOrderPlaceResult">
-            <summary>
-            Extension to be able to deserialize an error response as well
-            </summary>
-        </member>
-        <member name="T:Binance.Net.Objects.Models.Futures.BinanceUsdFuturesMultipleOrderPlaceResult">
-            <summary>
-            Extension to be able to deserialize an error response as well
-            </summary>
-        </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesOpenInterest">
             <summary>
             Open interest
@@ -25000,7 +25205,7 @@
             The price of the order
             </summary>
         </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.AveragePrice">
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.AvgPrice">
             <summary>
             The average price of the order
             </summary>
@@ -25008,11 +25213,6 @@
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.QuantityFilled">
             <summary>
             Quantity that has been filled
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.CummulativeQuantity">
-            <summary>
-            Cumulative quantity
             </summary>
         </member>
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrder.QuoteQuantityFilled">
@@ -25223,6 +25423,121 @@
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesOrderChange.After">
             <summary>
             After edit
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder">
+            <summary>
+            The result of placing a new order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.Symbol">
+            <summary>
+            The symbol the order is for
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.OrderId">
+            <summary>
+            The order id as assigned by Binance
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.ClientOrderId">
+            <summary>
+            The order id as assigned by the client
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.Price">
+            <summary>
+            The price of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.AveragePrice">
+            <summary>
+            The average price of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.QuantityFilled">
+            <summary>
+            Cumulative quantity
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.LastFilledQuantity">
+            <summary>
+            The quantity of the order that is executed
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.Quantity">
+            <summary>
+            The original quantity of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.ReduceOnly">
+            <summary>
+            Reduce Only
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.Side">
+            <summary>
+            The side of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.PositionSide">
+            <summary>
+            The position side of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.Status">
+            <summary>
+            The current status of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.StopPrice">
+            <summary>
+            Stop price for the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.ClosePosition">
+            <summary>
+            If order is for closing a position
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.TimeInForce">
+            <summary>
+            For what time the order lasts
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.Type">
+            <summary>
+            The type of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.OriginalType">
+            <summary>
+            The original type of the order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.ActivatePrice">
+            <summary>
+            Activation price, only return with TRAILING_STOP_MARKET order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.PriceRate">
+            <summary>
+            Callback rate, only return with TRAILING_STOP_MARKET order
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.UpdateTime">
+            <summary>
+            The time the order was updated
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.WorkingType">
+            <summary>
+            The working type
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesPlacedOrder.PriceProtect">
+            <summary>
+            Price protect
             </summary>
         </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesPositionMarginResult">
@@ -25858,7 +26173,12 @@
         <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtKline.TakerBuyQuoteVolume">
             <inheritdoc/>
         </member>
-        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtMultipleOrderCancelResult">
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesMultipleOrderPlaceResult">
+            <summary>
+            Extension to be able to deserialize an error response as well
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceUsdFuturesMultipleOrderPlaceResult">
             <summary>
             Extension to be able to deserialize an error response as well
             </summary>
@@ -25868,7 +26188,12 @@
             Extension to be able to deserialize an error response as well
             </summary>
         </member>
-        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtMultipleOrderPlaceResult">
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesMultipleOrderCancelResult">
+            <summary>
+            Extension to be able to deserialize an error response as well
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.BinanceUsdFuturesMultipleOrderCancelResult">
             <summary>
             Extension to be able to deserialize an error response as well
             </summary>
@@ -27229,6 +27554,36 @@
         <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceStrategyInfo.OpCode">
             <summary>
             Op code
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderRejectUpdated">
+            <summary>
+            Update when a triggered TP/SL order got rejected
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderRejectUpdated.TrigerOrderReject">
+            <summary>
+            Update info
+            </summary>
+        </member>
+        <member name="T:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderReject">
+            <summary>
+            Triggered TP/SL order rejected info
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderReject.Symbol">
+            <summary>
+            Symbol
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderReject.OrderId">
+            <summary>
+            OrderId
+            </summary>
+        </member>
+        <member name="P:Binance.Net.Objects.Models.Futures.Socket.BinanceTriggerOrderReject.Reason">
+            <summary>
+            Reason
             </summary>
         </member>
         <member name="T:Binance.Net.Objects.Options.BinanceOrderBookOptions">

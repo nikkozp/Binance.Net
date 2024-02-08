@@ -49,11 +49,6 @@ namespace Binance.Net.Objects.Models.Futures
         [JsonProperty("executedQty")]
         public decimal QuantityFilled { get; set; }
         /// <summary>
-        /// Cumulative quantity
-        /// </summary>
-        [JsonProperty("cumQty")]
-        public decimal QuantityFilled { get; set; }
-        /// <summary>
         /// Cumulative quantity in quote asset ( for USD futures )
         /// </summary>
         [JsonProperty("cumQuote")]

@@ -242,7 +242,7 @@ namespace Binance.Net
                             $"Trade rules check failed: MinNotional filter failed. Order value: {quoteQuantity}, minimal order value: {symbolData.NotionalFilter.MinNotional}");
                     }
 
-                    outputQuoteQuantity = symbolData.MinNotionalFilter.MinNotional;
+                    outputQuoteQuantity = symbolData.NotionalFilter.MinNotional;
                     logger.Log(LogLevel.Information, $"QuoteQuantity adjusted from {quoteQuantity} to {outputQuoteQuantity} based on min notional filter");
                 }
             }

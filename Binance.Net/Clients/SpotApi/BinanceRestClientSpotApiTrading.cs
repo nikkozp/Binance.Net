@@ -139,7 +139,7 @@ namespace Binance.Net.Clients.SpotApi
             int? receiveWindow = null,
             CancellationToken ct = default)
         {
-            return await _baseClient.PlaceOrderInternal<BinancePlacedOrder>(_baseClient.GetUrl(newTestOrderEndpoint, api, signedVersion),
+            return await _baseClient.PlaceOrderInternal(_baseClient.GetUrl(newTestOrderEndpoint, api, signedVersion),
                 symbol,
                 side,
                 type,
@@ -186,7 +186,7 @@ namespace Binance.Net.Clients.SpotApi
             int? receiveWindow = null,
             CancellationToken ct = default)
         {
-            var result = await _baseClient.PlaceOrderInternal<BinancePlacedOrder>(_baseClient.GetUrl(newOrderEndpoint, api, signedVersion),
+            var result = await _baseClient.PlaceOrderInternal(_baseClient.GetUrl(newOrderEndpoint, api, signedVersion),
                 symbol,
                 side,
                 type,
@@ -234,9 +234,9 @@ namespace Binance.Net.Clients.SpotApi
             parameters.AddOptionalParameter("cancelRestrictions", EnumConverter.GetString(cancelRestriction));
             parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.ClientOptions.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
-            var result = await _baseClient.SendRequestInternal<BinanceCanceledOrder>(_baseClient.GetUrl(cancelOrderEndpoint, api, signedVersion), HttpMethod.Delete, ct, parameters, true).ConfigureAwait(false);
-            //if (result)
-            //        _baseClient.InvokeOrderCanceled(new OrderId() { SourceObject = result.Data, Id = result.Data.OrderId.ToString(CultureInfo.InvariantCulture) });
+            var result = await _baseClient.SendRequestInternal<BinanceOrderBase>(_baseClient.GetUrl(cancelOrderEndpoint, api, signedVersion), HttpMethod.Delete, ct, parameters, true).ConfigureAwait(false);
+            if (result)
+                _baseClient.InvokeOrderCanceled(new OrderId() { SourceObject = result.Data, Id = result.Data.OrderId.ToString(CultureInfo.InvariantCulture) });
             return result;
         }
 
@@ -603,7 +603,7 @@ namespace Binance.Net.Clients.SpotApi
             int? receiveWindow = null,
             CancellationToken ct = default)
         {
-            var result = await _baseClient.PlaceOrderInternal<BinanceMarginPlacedOrder>(_baseClient.GetUrl(newMarginOrderEndpoint, marginApi, marginVersion),
+            var result = await _baseClient.PlaceOrderInternal(_baseClient.GetUrl(newMarginOrderEndpoint, marginApi, marginVersion),
                 symbol,
                 side,
                 type,

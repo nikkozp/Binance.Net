@@ -331,7 +331,7 @@ namespace Binance.Net.Clients.SpotApi
                                 s.Key.ToLower(CultureInfo.InvariantCulture) + "@kline" + "_" +
                     JsonConvert.SerializeObject(s.Value, new KlineIntervalConverter(false))).Distinct().ToArray();
 
-            return await _client.SubscribeAsync(_client.Options.BaseAddress, symbols, handler, ct).ConfigureAwait(false);
+            return await _client.SubscribeAsync(_client.BaseAddress, symbols, handler, ct).ConfigureAwait(false);
         }
 
         #endregion

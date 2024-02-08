@@ -83,7 +83,7 @@ namespace Binance.Net.Clients.SpotApi
 
         #region helpers
 
-        internal async Task<WebCallResult<T>> PlaceOrderInternal<T>(Uri uri,
+        internal async Task<WebCallResult<BinancePlacedOrder>> PlaceOrderInternal(Uri uri,
             string symbol,
             Enums.OrderSide side,
             SpotOrderType type,
@@ -104,7 +104,7 @@ namespace Binance.Net.Clients.SpotApi
             bool? autoRepayAtCancel = null,
             int? receiveWindow = null,
             int weight = 1,
-            CancellationToken ct = default) where T : BinancePlacedOrder
+            CancellationToken ct = default)
         {
             symbol.ValidateBinanceSymbol();
 
@@ -151,7 +151,7 @@ namespace Binance.Net.Clients.SpotApi
             parameters.AddOptionalParameter("autoRepayAtCancel", autoRepayAtCancel);
             parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? ClientOptions.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
-            return await SendRequestInternal<T>(uri, HttpMethod.Post, ct, parameters, true, weight: weight).ConfigureAwait(false);
+            return await SendRequestInternal<BinancePlacedOrder>(uri, HttpMethod.Post, ct, parameters, true, weight: weight).ConfigureAwait(false);
         }
 
         internal Uri GetUrl(string endpoint, string api, string? version = null)
