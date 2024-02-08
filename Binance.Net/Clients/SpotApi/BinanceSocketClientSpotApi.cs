@@ -8,9 +8,10 @@ using Binance.Net.Interfaces.Clients.SpotApi;
 using Binance.Net.Objects;
 using Binance.Net.Objects.Internal;
 using Binance.Net.Objects.Models.Spot;
+using Binance.Net.Objects.Options;
 using CryptoExchange.Net;
 using CryptoExchange.Net.Authentication;
-using CryptoExchange.Net.Logging;
+using CryptoExchange.Net.Converters;
 using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
 using Microsoft.Extensions.Logging;
@@ -23,11 +24,15 @@ namespace Binance.Net.Clients.SpotApi
     public class BinanceSocketClientSpotApi : SocketApiClient, IBinanceSocketClientSpotApi
     {
         #region fields
-        internal BinanceSocketClientOptions ClientOptions { get; }
-        internal new readonly BinanceSocketApiClientOptions Options;
+        /// <inheritdoc />
+        public new BinanceSocketOptions ClientOptions => (BinanceSocketOptions)base.ClientOptions;
+        /// <inheritdoc />
+        public new BinanceSocketApiOptions ApiOptions => (BinanceSocketApiOptions)base.ApiOptions;
 
-        internal BinanceExchangeInfo? ExchangeInfo;
-        internal DateTime? LastExchangeInfoUpdate;
+        internal BinanceExchangeInfo? _exchangeInfo;
+        internal DateTime? _lastExchangeInfoUpdate;
+        internal readonly string _brokerId;
+
         #endregion
 
         /// <inheritdoc />
@@ -39,24 +44,22 @@ namespace Binance.Net.Clients.SpotApi
 
         #region constructor/destructor
 
-        internal BinanceSocketClientSpotApi(Log log, BinanceSocketClientOptions options) :
-            base(log, options, options.SpotApiOptions)
+        internal BinanceSocketClientSpotApi(ILogger logger, BinanceSocketOptions options) :
+            base(logger, options.Environment.SpotSocketStreamAddress, options, options.SpotOptions)
         {
-            Options = options.SpotApiOptions;
-            ClientOptions = options;
-
             SetDataInterpreter((data) => string.Empty, null);
-            RateLimitPerSocketPerSecond = 4;
 
-            Account = new BinanceSocketClientSpotApiAccount(log, this);
-            ExchangeData = new BinanceSocketClientSpotApiExchangeData(log, this);
-            Trading = new BinanceSocketClientSpotApiTrading(log, this);
+            Account = new BinanceSocketClientSpotApiAccount(logger, this);
+            ExchangeData = new BinanceSocketClientSpotApiExchangeData(logger, this);
+            Trading = new BinanceSocketClientSpotApiTrading(logger, this);
+
+            _brokerId = !string.IsNullOrEmpty(options.SpotOptions.BrokerId) ? options.SpotOptions.BrokerId! : "x-VICEW9VV";
         }
         #endregion
 
         /// <inheritdoc />
         protected override AuthenticationProvider CreateAuthenticationProvider(ApiCredentials credentials)
-            => new BinanceAuthenticationProvider((BinanceApiCredentials)credentials);
+            => new BinanceAuthenticationProvider(credentials);
 
         internal Task<CallResult<UpdateSubscription>> SubscribeAsync<T>(string url, IEnumerable<string> topics, Action<DataEvent<T>> onData, CancellationToken ct)
         {
@@ -64,27 +67,27 @@ namespace Binance.Net.Clients.SpotApi
             {
                 Method = "SUBSCRIBE",
                 Params = topics.ToArray(),
-                Id = NextId()
+                Id = ExchangeHelpers.NextId()
             };
 
             return SubscribeAsync(url.AppendPath("stream"), request, null, false, onData, ct);
         }
 
-        internal Task<CallResult<BinanceResponse<T>>> QueryAsync<T>(string url, string method, Dictionary<string, object> parameters, bool authenticated = false, bool sign = false)
+        internal Task<CallResult<BinanceResponse<T>>> QueryAsync<T>(string url, string method, Dictionary<string, object> parameters, bool authenticated = false, bool sign = false, int weight = 1)
         {
             if (authenticated)
             {
-                if (AuthenticationProvider?.Credentials?.Key == null)
+                if (AuthenticationProvider == null)
                     throw new InvalidOperationException("No credentials provided for authenticated endpoint");
 
+                var authProvider = (BinanceAuthenticationProvider)AuthenticationProvider;
                 if (sign)
                 {
-                    var authProvider = (BinanceAuthenticationProvider)AuthenticationProvider;
                     parameters = authProvider.AuthenticateSocketParameters(parameters);
                 }
                 else
                 {
-                    parameters.Add("apiKey", AuthenticationProvider.Credentials.Key.GetString());
+                    parameters.Add("apiKey", authProvider.GetApiKey());
                 }
             }
 
@@ -92,10 +95,10 @@ namespace Binance.Net.Clients.SpotApi
             {
                 Method = method,
                 Params = parameters,
-                Id = NextId()
+                Id = ExchangeHelpers.NextId()
             };
 
-            return QueryAsync<BinanceResponse<T>>(url, request, false);
+            return QueryAsync<BinanceResponse<T>>(url, request, false, weight);
         }
 
         internal CallResult<T> DeserializeInternal<T>(JToken obj, JsonSerializer? serializer = null, int? requestId = null)
@@ -115,7 +118,21 @@ namespace Binance.Net.Clients.SpotApi
             if (status != 200)
             {
                 var error = data["error"]!;
-                callResult = new CallResult<T>(new ServerError(error["code"]!.Value<int>(), error["msg"]!.Value<string>()!));
+
+                if (status == 429 || status == 418)
+                {
+                    DateTime? retryAfter = null;
+                    var retryAfterVal = error["data"]?["retryAfter"]?.ToString();
+                    if (long.TryParse(retryAfterVal, out var retryAfterMs))
+                        retryAfter = DateTimeConverter.ConvertFromMilliseconds(retryAfterMs);
+
+                    callResult = new CallResult<T>(new ServerRateLimitError(error["msg"]!.Value<string>()!)
+                    {
+                        RetryAfter = retryAfter
+                    });
+                }
+                else
+                    callResult = new CallResult<T>(new ServerError(error["code"]!.Value<int>(), error["msg"]!.Value<string>()!));
                 return true;
             }
             callResult = Deserialize<T>(data!);
@@ -140,7 +157,7 @@ namespace Binance.Net.Clients.SpotApi
             var result = message["result"];
             if (result != null && result.Type == JTokenType.Null)
             {
-                _log.Write(LogLevel.Trace, $"Socket {s.SocketId} Subscription completed");
+                _logger.Log(LogLevel.Trace, $"Socket {s.SocketId} Subscription completed");
                 callResult = new CallResult<object>(new object());
                 return true;
             }
@@ -186,13 +203,28 @@ namespace Binance.Net.Clients.SpotApi
         protected override async Task<bool> UnsubscribeAsync(SocketConnection connection, SocketSubscription subscription)
         {
             var topics = ((BinanceSocketRequest)subscription.Request!).Params;
-            var unsub = new BinanceSocketRequest { Method = "UNSUBSCRIBE", Params = topics, Id = NextId() };
+            var topicsToUnsub = new List<string>();
+            foreach(var topic in topics)
+            {
+                if (connection.Subscriptions.Where(s => s != subscription).Any(s => ((BinanceSocketRequest?)s.Request)?.Params.Contains(topic) == true))
+                    continue;
+
+                topicsToUnsub.Add(topic);
+            }
+
+            if (!topicsToUnsub.Any())
+            {
+                _logger.LogInformation("No topics need unsubscribing (still active on other subscriptions)");
+                return true;
+            }
+
+            var unsub = new BinanceSocketRequest { Method = "UNSUBSCRIBE", Params = topicsToUnsub.ToArray(), Id = ExchangeHelpers.NextId() };
             var result = false;
 
             if (!connection.Connected)
                 return true;
 
-            await connection.SendAndWaitAsync(unsub, Options.SocketResponseTimeout, null, data =>
+            await connection.SendAndWaitAsync(unsub, ClientOptions.RequestTimeout, null, 1, data =>
             {
                 if (data.Type != JTokenType.Object)
                     return false;
@@ -218,16 +250,16 @@ namespace Binance.Net.Clients.SpotApi
 
         internal async Task<BinanceTradeRuleResult> CheckTradeRules(string symbol, decimal? quantity, decimal? quoteQuantity, decimal? price, decimal? stopPrice, SpotOrderType? type)
         {
-            if (Options.TradeRulesBehaviour == TradeRulesBehaviour.None)
+            if (ApiOptions.TradeRulesBehaviour == TradeRulesBehaviour.None)
                 return BinanceTradeRuleResult.CreatePassed(quantity, quoteQuantity, price, stopPrice);
 
-            if (ExchangeInfo == null || LastExchangeInfoUpdate == null || (DateTime.UtcNow - LastExchangeInfoUpdate.Value).TotalMinutes > Options.TradeRulesUpdateInterval.TotalMinutes)
+            if (_exchangeInfo == null || _lastExchangeInfoUpdate == null || (DateTime.UtcNow - _lastExchangeInfoUpdate.Value).TotalMinutes > ApiOptions.TradeRulesUpdateInterval.TotalMinutes)
                 await ExchangeData.GetExchangeInfoAsync().ConfigureAwait(false);
 
-            if (ExchangeInfo == null)
+            if (_exchangeInfo == null)
                 return BinanceTradeRuleResult.CreateFailed("Unable to retrieve trading rules, validation failed");
 
-            return BinanceHelpers.ValidateTradeRules(_log, Options.TradeRulesBehaviour, ExchangeInfo, symbol, quantity, quoteQuantity, price, stopPrice, type);
+            return BinanceHelpers.ValidateTradeRules(_logger, ApiOptions.TradeRulesBehaviour, _exchangeInfo, symbol, quantity, quoteQuantity, price, stopPrice, type);
         }
 
     }

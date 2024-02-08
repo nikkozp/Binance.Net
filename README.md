@@ -7,6 +7,9 @@ Binance.Net is a wrapper around the Binance API as described on [Binance](https:
 
 [Documentation](https://jkorf.github.io/Binance.Net/)
 
+## Installation
+`dotnet add package Binance.Net`
+
 ## Support the project
 I develop and maintain this package on my own for free in my spare time, any support is greatly appreciated.
 
@@ -17,9 +20,8 @@ Sign up using the following referral link to pay a small percentage of the tradi
 ### Donate
 Make a one time donation in a crypto currency of your choice. If you prefer to donate a currency not listed here please contact me.
 
-**Btc**:  12KwZk3r2Y3JZ2uMULcjqqBvXmpDwjhhQS  
-**Eth**:  0x069176ca1a4b1d6e0b7901a6bc0dbf3bb0bf5cc2  
-**Nano**: xrb_1ocs3hbp561ef76eoctjwg85w5ugr8wgimkj8mfhoyqbx4s1pbc74zggw7gs  
+**Btc**:  bc1qz0jv0my7fc60rxeupr23e75x95qmlq6489n8gh  
+**Eth**:  0x8E21C4d955975cB645589745ac0c46ECA8FAE504  
 
 ### Sponsor
 Alternatively, sponsor me on Github using [Github Sponsors](https://github.com/sponsors/JKorf). 
@@ -28,6 +30,110 @@ Alternatively, sponsor me on Github using [Github Sponsors](https://github.com/s
 A Discord server is available [here](https://discord.gg/MSpeEtSY8t). For discussion and/or questions around the CryptoExchange.Net and implementation libraries, feel free to join.
 
 ## Release notes
+* Version 9.4.0 - 05 Jan 2024
+    * Added futures Trading.GetFundingInfoAsync endpoint
+    * Added autoRepayAtCancel and selfTradePreventionMode parameters to SpotApi.Trading.PlaceMarginOCOOrderAsync
+    * Added MarkPrice to futures funding rate models
+    * Updated and combined futures order models
+    * Updated withdraw history model
+
+* Version 9.3.0 - 26 Dec 2023
+    * Added selfTradePreventionMode and autoRepayAtCancel parameters to SpotApi.Trading.PlaceMarginOrderAsync
+    * Updated SpotApi.ExchangeData.GetProductsAsync response model
+    * Updated Usdt futures position model
+    * Updated orderId parameter to long type on socket client SpotApi.Trading.GetOrderAsync and SpotApi.Trading.CancelOrderAsync
+
+* Version 9.2.0 - 03 Dec 2023
+    * Added Convert endpoints
+    * Updated default ratelimits
+    * Fixed handling of ratelimit errors
+    * Added missing trade group enum values
+
+* Version 9.1.7 - 24 Nov 2023
+    * Added missing BreakEvenPrice property on PositionInfo model
+    * Fixed deserialization issue on ratelimiters socket client GetExchangeInfoAsync
+
+* Version 9.1.6 - 29 Oct 2023
+    * Added broker reference option
+
+* Version 9.1.5 - 24 Oct 2023
+    * Updated CryptoExchange.Net
+
+* Version 9.1.4 - 09 Oct 2023
+    * Updated CryptoExchange.Net version
+
+* Version 9.1.3 - 23 Sep 2023
+    * Fixed GetExchangeInfoAsync missing enum mapping
+    * Added Common clients to DI container
+
+* Version 9.1.2 - 06 Sep 2023
+    * Added GoodTillDate TimeInForce enum value, fixing UsdFutures.ExchangeData.GetExchangeInfoAsync endpoint deserialization error
+
+* Version 9.1.1 - 02 Sep 2023
+    * Added missing account permissions
+
+* Version 9.1.0 - 25 Aug 2023
+    * Removed deprecated endpoints
+    * Updated models
+	* Added support for rate limiting on the socket client
+	* Updated the weights and rate limits for the websocket API
+    * Added restClient.GeneralApi.Futures.GetAdjustCrossCollateralLoanToValueHistoryAsync
+    * Added restClient.GeneralApi.Futures.GetCrossCollateralLiquidationHistoryAsync
+    * Added restClient.GeneralApi.Futures.GetCrossCollateralInterestHistoryAsync
+    * Added restClient.GeneralApi.CryptoLoans.GetLoanableAssetsAsync
+    * Added restClient.GeneralApi.CryptoLoans.GetCollateralAssetsAsync
+    * Added restClient.GeneralApi.CryptoLoans.GetCollateralRepayRateAsync
+    * Added restClient.GeneralApi.CryptoLoans.CustomizeMarginCallAsync
+    * Added restClient.GeneralApi.Mining.GetMiningAccountEarningsAsync
+    * Added restClient.SpotApi.Account.CrossMarginAdjustMaxLeverageAsync
+    * Added restClient.SpotApi.Account.ConvertBusdAsync
+    * Added restClient.SpotApi.Account.GetBusdConvertHistoryAsync
+    * Added restClient.SpotApi.Account.GetCloudMiningHistoryAsync
+    * Added restClient.SpotApi.Account.GetIsolatedMarginFeeDataAsync
+    * Added restClient.SpotApi.Account.GetMarginAssetsBnbConvertableAsync
+    * Added restClient.SpotApi.Account.MarginDustTransferAsync
+    * Added restClient.SpotApi.Account.GetCrossMarginSmallLiabilityExchangeAssetsAsync
+    * Added restClient.SpotApi.Account.CrossMarginSmallLiabilityExchangeAsync
+    * Added restClient.SpotApi.Account.GetCrossMarginSmallLiabilityExchangeHistoryAsync
+    * Added restClient.SpotApi.ExchangeData.GetFutureHourlyInterestRateAsync
+    * Added restClient.SpotApi.ExchangeData.GetMarginDelistScheduleAsync
+    * Added restClient.SpotApi.Trading.GetUnclaimedLiquidityPoolsRewardsAsync
+    * Added restClient.SpotApi.Trading.ClaimLiquidityPoolsRewardsAsync
+    * Added restClient.SpotApi.Trading.GetLiquidityPoolsClaimHistoryAsync
+    * Added restClient.SpotApi.Trading.PlaceSpotTimeWeightedAveragePriceOrderAsync
+    * Added restClient.SpotApi.Trading.CancelSpotAlgoOrderAsync
+    * Added restClient.SpotApi.Trading.GetSpotOpenAlgoOrdersAsync
+    * Added restClient.SpotApi.Trading.GetSpotClosedAlgoOrdersAsync
+    * Added restClient.SpotApi.Trading.GetSpotAlgoSubOrdersAsync
+
+* Version 9.0.5 - 06 Aug 2023
+    * Added Usd Futures EditOrder endpoint
+    * Added cancelRestriction parameter to spot CancelOrder and ReplaceOrder endpoints
+
+* Version 9.0.4 - 11 Jul 2023
+    * Fixed GetUniversalTransferHistoryAsync deserialization
+
+* Version 9.0.3 - 11 Jul 2023
+    * Fixed GetUniversalTransferHistoryAsync deserialization
+
+* Version 9.0.2 - 06 Jul 2023
+    * Fixed socket client options copying
+
+* Version 9.0.1 - 25 Jun 2023
+    * Fix for invalid build
+
+* Version 9.0.0 - 25 Jun 2023
+    * Updated CryptoExchange.Net to version 6.0.0
+    * Renamed BinanceClient to BinanceRestClient
+    * Renamed UsdFuturesStreams and CoinFuturesStreams to UsdFuturesApi and CoinFuturesApi on the BinanceSocketClient
+    * Updated endpoints to consistently use a base url without any path as basis to make switching environments/base urls clearer
+    * Removed BinanceApiCredentials as the base ApiCredentials now supports RSA signing
+    * Added IBinanceOrderBookFactory and implementation for creating order books
+    * Updated dependency injection register method (AddBinance)
+
+* Version 8.6.3 - 19 Jun 2023
+    * Fixed trading rules check not actually applying to the parameters send when placing an order with the socket client
+
 * Version 8.6.2 - 22 May 2023
     * Added orderId filter to futures GetUserTradesAsync endpoints
     * Fixed missing writers for BinanceSymbolFilter serialization

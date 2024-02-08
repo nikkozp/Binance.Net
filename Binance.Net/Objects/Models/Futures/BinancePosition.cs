@@ -147,6 +147,12 @@ namespace Binance.Net.Objects.Models.Futures
         public decimal Quantity { get; set; }
 
         /// <summary>
+        /// Break even price
+        /// </summary>
+        [JsonProperty("breakEvenPrice")]
+        public decimal BreakEvenPrice { get; set; }
+
+        /// <summary>
         /// Last update time
         /// </summary>
         [JsonConverter(typeof(DateTimeConverter))]
@@ -163,6 +169,16 @@ namespace Binance.Net.Objects.Models.Futures
         /// </summary>
         [JsonProperty("maxNotionalValue")]
         public decimal MaxNotional { get; set; }
+        /// <summary>
+        /// Notional value
+        /// </summary>
+        [JsonProperty("notional")]
+        public decimal Notional { get; set; }
+        /// <summary>
+        /// Isolated wallet
+        /// </summary>
+        [JsonProperty("isolatedWallet")]
+        public decimal IsolatedWallet { get; set; }
     }
 
     /// <summary>

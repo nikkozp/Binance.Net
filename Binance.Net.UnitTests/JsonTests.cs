@@ -5,35 +5,29 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CryptoExchange.Net.Interfaces;
 using Binance.Net.Interfaces.Clients;
+using CryptoExchange.Net.Authentication;
 
 namespace Binance.Net.UnitTests
 {
     [TestFixture]
     public class JsonTests
     {
-        private JsonToObjectComparer<IBinanceClient> _comparer = new JsonToObjectComparer<IBinanceClient>((json) => TestHelpers.CreateResponseClient(json, new BinanceClientOptions()
-        { 
-            ApiCredentials = new BinanceApiCredentials("123", "123"), 
-            SpotApiOptions = new BinanceApiClientOptions
-            {
-                RateLimiters = new List<IRateLimiter>(),
-                AutoTimestamp = false,
-            },
-            UsdFuturesApiOptions = new BinanceApiClientOptions
-            {
-                RateLimiters = new List<IRateLimiter>(),
-                AutoTimestamp = false,
-            },
-            CoinFuturesApiOptions = new BinanceApiClientOptions
-            {
-                RateLimiters = new List<IRateLimiter>(),
-                AutoTimestamp = false,
-            }
+        private JsonToObjectComparer<IBinanceRestClient> _comparer = new JsonToObjectComparer<IBinanceRestClient>((json) => TestHelpers.CreateResponseClient(json, options =>
+        {
+            options.ApiCredentials = new ApiCredentials("123", "123");
+            options.SpotOptions.RateLimiters = new List<IRateLimiter>();
+            options.SpotOptions.AutoTimestamp = false;
+
+            options.UsdFuturesOptions.RateLimiters = new List<IRateLimiter>();
+            options.UsdFuturesOptions.AutoTimestamp = false;
+
+            options.CoinFuturesOptions.RateLimiters = new List<IRateLimiter>();
+            options.CoinFuturesOptions.AutoTimestamp = false;
         }));
 
         [Test]
         public async Task ValidateSpotAccountCalls()
-        {   
+        {
             await _comparer.ProcessSubject(
                 "Spot/Account",
                 c => c.SpotApi.Account,
@@ -77,7 +71,7 @@ namespace Binance.Net.UnitTests
                     { "PlaceMarginOrderAsync", new List<string> { "price" } },
                     { "GetMarginOrdersAsync", new List<string> { "price" } },
                 },
-                parametersToSetNull: new[] { "limit", "quoteQuantity", "fromId", "cancelClientOrderId" });
+                parametersToSetNull: new[] { "limit", "quoteQuantity", "fromId", "cancelClientOrderId", "orderId" });
         }
 
         [Test]
@@ -91,7 +85,17 @@ namespace Binance.Net.UnitTests
                 {
                     { "GetSubAccountsAsync", "subAccounts" },
                     { "GetSubAccountAssetsAsync", "balances" },
+                    { "GetUniversalTransferHistoryAsync", "result" },
+                    { "GetFuturesAssetTransferHistoryAsync", "transfers" },
                 });
+        }
+
+        [Test]
+        public async Task ValidateSpotStakingCalls()
+        {
+            await _comparer.ProcessSubject(
+                "General/Staking",
+                c => c.GeneralApi.Staking);
         }
 
         [Test]
@@ -191,7 +195,7 @@ namespace Binance.Net.UnitTests
                     { "GetTopLongShortPositionRatioAsync", new List<string> { "shortPosition", "longPosition" } },
                 },
                 parametersToSetNull: new string[] {
-                    "limit" 
+                    "limit"
                 });
         }
 

@@ -44,10 +44,26 @@ namespace Binance.Net.Objects.Models.Futures
         [JsonProperty("avgPrice")]
         public decimal AvgPrice { get; set; }
         /// <summary>
-        /// Cumulative quantity
+        /// Quantity that has been filled
         /// </summary>
         [JsonProperty("executedQty")]
         public decimal QuantityFilled { get; set; }
+        /// <summary>
+        /// Cumulative quantity
+        /// </summary>
+        [JsonProperty("cumQty")]
+        public decimal QuantityFilled { get; set; }
+        /// <summary>
+        /// Cumulative quantity in quote asset ( for USD futures )
+        /// </summary>
+        [JsonProperty("cumQuote")]
+        public decimal? QuoteQuantityFilled { get; set; }
+
+        /// <summary>
+        /// Cumulative quantity in quote asset ( for Coin futures )
+        /// </summary>
+        [JsonProperty("cumBase")]
+        public decimal? BaseQuantityFilled { get; set; }
         /// <summary>
         /// The original quantity of the order
         /// </summary>
@@ -60,7 +76,7 @@ namespace Binance.Net.Objects.Models.Futures
         public bool ReduceOnly { get; set; }
 
         /// <summary>
-        /// if Close-All
+        /// If order is for closing a position
         /// </summary>
         [JsonProperty("closePosition")]
         public bool ClosePosition { get; set; }
@@ -86,19 +102,20 @@ namespace Binance.Net.Objects.Models.Futures
         /// <summary>
         /// For what time the order lasts
         /// </summary>
-        [JsonProperty("timeInForce"), JsonConverter(typeof(TimeInForceConverter))]
+        [JsonProperty("timeInForce"), JsonConverter(typeof(EnumConverter))]
         public TimeInForce TimeInForce { get; set; }
+
+        /// <summary>
+        /// The type of the order
+        /// </summary>
+        [JsonProperty("type"), JsonConverter(typeof(FuturesOrderTypeConverter))]
+        public FuturesOrderType Type { get; set; }
 
         /// <summary>
         /// The type of the order
         /// </summary>
         [JsonProperty("origType"), JsonConverter(typeof(FuturesOrderTypeConverter))]
         public FuturesOrderType OriginalType { get; set; }
-        /// <summary>
-        /// The type of the order
-        /// </summary>
-        [JsonProperty("type"), JsonConverter(typeof(FuturesOrderTypeConverter))]
-        public FuturesOrderType Type { get; set; }
 
         /// <summary>
         /// Activation price, only return with TRAILING_STOP_MARKET order
@@ -141,5 +158,29 @@ namespace Binance.Net.Objects.Models.Futures
         /// </summary>
         [JsonProperty("priceProtect")]
         public bool PriceProtect { get; set; }
+    }
+
+    /// <summary>
+    /// Usdt futures order
+    /// </summary>
+    public class BinanceUsdFuturesOrder : BinanceFuturesOrder
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty("priceMatch"), JsonConverter(typeof(EnumConverter))]
+        public PriceMatch PriceMatch { get; set; }
+
+        /// <summary>
+        /// Self trade prevention mode
+        /// </summary>
+        [JsonProperty("selfTradePreventionMode"), JsonConverter(typeof(EnumConverter))]
+        public SelfTradePreventionMode SelfTradePreventionMode { get; set; }
+
+        /// <summary>
+        /// Auto cancel at this date
+        /// </summary>
+        [JsonProperty("goodTillDate"), JsonConverter(typeof(DateTimeConverter))]
+        public DateTime? GoodTillDate { get; set; }
     }
 }
