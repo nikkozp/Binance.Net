@@ -26146,16 +26146,6 @@
             Auto-exchange threshold in Multi-Assets margin mode
             </summary>
         </member>
-        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtCancelOrder">
-            <summary>
-            The result of cancel order
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtCancelOrder.QuoteQuantityFilled">
-            <summary>
-            Cumulative quantity in quote asset ( for USD futures )
-            </summary>
-        </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtKline">
             <summary>
             Candlestick information for symbol
@@ -26196,26 +26186,6 @@
         <member name="T:Binance.Net.Objects.Models.Futures.BinanceUsdFuturesMultipleOrderCancelResult">
             <summary>
             Extension to be able to deserialize an error response as well
-            </summary>
-        </member>
-        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtOrder">
-            <summary>
-            The result of query order
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtOrder.QuoteQuantity">
-            <summary>
-            Cumulative quantity in quote asset ( for USD futures )
-            </summary>
-        </member>
-        <member name="T:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtPlacedOrder">
-            <summary>
-            The result of placing a new order
-            </summary>
-        </member>
-        <member name="P:Binance.Net.Objects.Models.Futures.BinanceFuturesUsdtPlacedOrder.QuoteQuantityFilled">
-            <summary>
-            Cumulative quantity in quote asset ( for USD futures )
             </summary>
         </member>
         <member name="T:Binance.Net.Objects.Models.Futures.BinancePositionBase">

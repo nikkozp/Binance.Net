@@ -260,7 +260,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
         #region Modify Order
 
         /// <inheritdoc />
-        public async Task<WebCallResult<BinanceFuturesUsdtOrder>> ModifyOrderAsync(
+        public async Task<WebCallResult<BinanceUsdFuturesOrder>> ModifyOrderAsync(
             string symbol,
             OrderSide side,
             decimal quantity,
@@ -282,7 +282,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
             parameters.AddOptionalParameter("origClientOrderId", clientOrderId);
             parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? _baseClient.ClientOptions.ReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
-            var result = await _baseClient.SendRequestInternal<BinanceFuturesUsdtOrder>(_baseClient.GetUrl(modifyOrderEndpoint, api, "1"), HttpMethod.Put, ct, parameters, true).ConfigureAwait(false);
+            var result = await _baseClient.SendRequestInternal<BinanceUsdFuturesOrder>(_baseClient.GetUrl(modifyOrderEndpoint, api, "1"), HttpMethod.Put, ct, parameters, true).ConfigureAwait(false);
 
             return result;
         }
@@ -292,7 +292,7 @@ namespace Binance.Net.Clients.UsdFuturesApi
         #region Multiple Modify Orders 
 
         /// <inheritdoc />
-        public async Task<WebCallResult<IEnumerable<CallResult<BinanceFuturesUsdtOrder>>>> ModifyMultipleOrderAsync(
+        public async Task<WebCallResult<IEnumerable<CallResult<BinanceUsdFuturesOrder>>>> ModifyMultipleOrderAsync(
             BinanceFuturesBatchModifyOrder[] orders,
             int? receiveWindow = null,
             CancellationToken ct = default)
@@ -327,17 +327,17 @@ namespace Binance.Net.Clients.UsdFuturesApi
 
             var response = await _baseClient.SendRequestInternal<IEnumerable<BinanceFuturesUsdtMultipleOrderModifyResult>>(_baseClient.GetUrl(multipleModifyOrdersEndpoint, api, "1"), HttpMethod.Put, ct, parameters, true, weight: 5).ConfigureAwait(false);
             if (!response.Success)
-                return response.As<IEnumerable<CallResult<BinanceFuturesUsdtOrder>>>(default);
+                return response.As<IEnumerable<CallResult<BinanceUsdFuturesOrder>>>(default);
 
-            var result = new List<CallResult<BinanceFuturesUsdtOrder>>();
+            var result = new List<CallResult<BinanceUsdFuturesOrder>>();
             foreach (var item in response.Data)
             {
                 result.Add(item.Code != 0
-                    ? new CallResult<BinanceFuturesUsdtOrder>(new ServerError(item.Code, item.Message))
-                    : new CallResult<BinanceFuturesUsdtOrder>(item));
+                    ? new CallResult<BinanceUsdFuturesOrder>(new ServerError(item.Code, item.Message))
+                    : new CallResult<BinanceUsdFuturesOrder>(item));
             }
 
-            return response.As<IEnumerable<CallResult<BinanceFuturesUsdtOrder>>>(result);
+            return response.As<IEnumerable<CallResult<BinanceUsdFuturesOrder>>>(result);
         }
 
         #endregion
