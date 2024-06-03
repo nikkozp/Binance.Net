@@ -8,14 +8,14 @@
         /// <summary>
         /// Seconds
         /// </summary>
-        Second,
+        Second = 1,
         /// <summary>
         /// Minutes
         /// </summary>
-        Minute,
+        Minute = 1 * 60,
         /// <summary>
         /// Days
         /// </summary>
-        Day
+        Day = 1 * 60 * 60 * 24
     }
 }
